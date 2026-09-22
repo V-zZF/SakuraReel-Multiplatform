@@ -1,0 +1,39 @@
+# 编译产物
+/target
+src-tauri/target/
+src-tauri/gen/
+
+# Rust
+*.rs.bk
+
+# Node
+node_modules/
+ui/dist/
+
+# Go
+server/mal
+server/*.test
+server/vendor/
+
+# 运行时数据（数据不进仓库）
+*.db
+*.db-journal
+*.db-wal
+posters/
+*.log
+
+# 移动端产物
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
