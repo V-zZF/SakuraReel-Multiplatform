@@ -12,6 +12,7 @@ ui/dist/
 
 # Go
 server/mal
+server/migrate
 server/*.test
 server/vendor/
 

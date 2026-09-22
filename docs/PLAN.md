@@ -54,18 +54,36 @@
 
 ---
 
-## 阶段 B — 服务端搬入（先不碰同步）
+## 阶段 B — 服务端搬入（先不碰同步）✅
 
-| 步骤 | 内容 | 验收 |
+| 步骤 | 内容 | 状态 |
 |---|---|---|
-| B1 | 把 `MAL` 后端搬进 `server/`：`main.go`、`internal/`、`go.mod`，先原样能跑 | 我：`go build` |
-| B2 | 建表加同步列：`uid` / `updated_at` / `deleted_at` / `server_rev`，外加 `rev` 计数器表与 `meta` 表 | 我：`go build` |
-| B3 | 写迁移：老 127 条补 `uid` 与 `updated_at`（取 `created_at`） | 我：本地跑一次迁移 |
-| B4 | 写迁移：海报改名成 `<uid>.<ext>`，同步更新 `poster` 字段 | 我：本地跑一次迁移 |
-| B5 | 现有 REST 写路径（create/update/delete/reorder）补写 `updated_at` 与 `server_rev` | 我：`go build` |
-| **B6** | **你验证**：拿一份 `anime.db` + `posters/` 副本跑迁移，确认仍是 127 条、海报都能显示；浏览器旧页面增删改查排序全正常 | **【你】** |
+| B1 | 把 `MAL` 后端搬进 `server/`：`main.go`、`internal/`、`go.mod`，先原样能跑 | ✅ |
+| B2 | 建表加同步列：`uid` / `updated_at` / `deleted_at` / `server_rev`，外加 `rev` 计数器表与 `meta` 表 | ✅ |
+| B3 | 写迁移：老 127 条补 `uid` 与 `updated_at`（取 `created_at`） | ✅ |
+| B4 | 写迁移：海报改名成 `<uid>.<ext>`，同步更新 `poster` 字段 | ✅ |
+| B5 | 现有 REST 写路径（create/update/delete/reorder）补写 `updated_at` 与 `server_rev` | ✅ |
+| **B6** | **你验证**：拿一份 `anime.db` + `posters/` 副本跑迁移，确认仍是 127 条、海报都能显示；浏览器旧页面增删改查排序全正常 | ✅ 用户实机验证通过 |
 
 > B3/B4/B5 动的是数据，**先备份** `anime.db` 与 `posters/` 再跑。
+> 备份已放在 `/Users/zzf/code/MAL-backup-20260922-stageB/`（原件 sha256 一致）。
+
+### 阶段 B 记录（B1–B5）
+
+- **搬入**：`server/` 里是 `MAL` 后端（模块名仍是 `mal`），前端产物临时放在
+  `server/frontend/dist`（阶段 D 换成 `ui/dist`）。旧的标题改名工具 `cmd/migrate-posters`
+  删除，换成 `cmd/migrate`（一次性迁移，幂等）。
+- **表结构**：`anime` 加 `uid`（UUID v4）/ `updated_at` / `deleted_at` / `server_rev`；
+  新增 `rev` 计数器表与 `meta` 表；删历史列 `home_position`、`ranking_position`。
+- **删除语义**：DELETE 改成写墓碑（`deleted_at`），不物理删行，海报文件也保留；
+  所有读路径过滤墓碑，浏览器行为与以前一致。
+- **基线 rev**：迁移时给老数据按 `id` 顺序分配 `1..127`，保证 `since=0` 的全量拉取不漏行。
+- **新增 `-data` 参数**（服务端与迁移命令）：对着数据副本跑，不碰线上数据；不传时行为不变。
+- **新增 `-port` 参数**（默认仍是 2233）：验证时用 `-port 2333`，可与线上服务并存。
+- **我跑过的**：`go build ./...` / `go vet ./...` + 副本迁移（127 条 / 133 文件 / 幂等 / 空库建表）。
+  起服务与界面点击（B6）由用户完成。
+
+详细记录、核对基准与 B6 的命令见 [../DEVLOG.md](../DEVLOG.md)。
 
 ---
 

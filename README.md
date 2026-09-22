@@ -3,7 +3,7 @@
 个人影视/番剧收藏库。一套 React 界面跑在 **Windows / macOS / iOS / Android** 四个 App 上，
 数据每台设备本地保存（离线全功能），服务端在线时自动双向同步；浏览器访问照旧可用。
 
-> 当前版本：**SakuraReel-Multi v0.1**
+> 当前版本：**SakuraReel-Multi v0.2**
 
 ## 目录
 
@@ -21,8 +21,20 @@
 
 ## 当前状态
 
-**阶段 A（地基）已完成**：目录骨架已就位，四端工具链已装好（Rust 1.98.1 / Node 24.9.0 / Go 1.27.1 / JDK 21 / Android SDK+NDK 27.3 / Xcode 27）。
-
+**阶段 A（地基）✅**：目录骨架已就位，四端工具链已装好（Rust 1.98.1 / Node 24.9.0 / Go 1.27.1 / JDK 21 / Android SDK+NDK 27.3 / Xcode 27）。
 重装工具链：`bash scripts/setup-toolchain.sh`。
 
-下一步：阶段 B —— 把 `MAL` 的 Go 后端搬进 `server/`，给表加同步字段，跑一次数据迁移。
+**阶段 B（服务端搬入）✅**：`MAL` 后端已搬进 `server/`；`anime` 表补上同步字段
+（`uid` / `updated_at` / `deleted_at` / `server_rev`）并新增 `rev` 计数器表与 `meta` 表；
+一次性迁移（补 uid + 海报改名 `<uid>.<ext>`）已在数据副本上跑通并核对：
+仍是 127 条、133 张海报，浏览器旧页面增删改查排序正常。
+
+服务端跑起来：
+
+```bash
+cd server
+go run .                                  # 浏览器打开 http://localhost:2233
+go run . -data <数据目录> -port 2333       # 对着数据副本验证，不碰线上数据
+```
+
+下一步：阶段 C —— 同步接口（`/api/sync/push` / `pull` / `poster` / `state`）。
