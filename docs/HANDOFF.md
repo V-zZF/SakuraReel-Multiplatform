@@ -1,93 +1,58 @@
-# 交接 — 下一个窗口从这里开始
+# 交接 — 下一个窗口做阶段 D
 
-## 粘贴给新窗口
+## 粘贴给下一个窗口
 
-```
+```text
 继续 SakuraReel 多端化项目。仓库：/Users/zzf/code/SakuraReel-Multilingual
-先读 DEVLOG.md 与 docs/PLAN.md（PLAN 是分步计划）。
+先读 DEVLOG.md、docs/PLAN.md、docs/HANDOFF.md。
 
-当前进度：阶段 A ✅、阶段 B ✅（v0.2：MAL 后端已搬进 server/、anime 表补了同步字段、
-一次性迁移做完，实机验证通过）。
+当前版本 v0.3：阶段 A、B 完成；阶段 C 的 C1–C4 已实现并通过 go build。
+C5 的 curl 命令已交给用户，但本窗口没有收到实机验证结果，不要写成已通过。
 
-现在做阶段 C 的 C1–C4：
+现在做阶段 D 的 D1–D3：
+- D1 把 MAL/frontend 搬进 ui/，使 web 构建可用，并让 Go 服务继续托管新构建的前端。
+- D2 抽 ui/src/data/ 统一数据接口，先实现 http.ts。
+- D3 把 hooks/useAnime.ts 和 LeaderBoard.tsx 的 API 调用接到 data/。
+完成后只跑 npm run build / go build 编译检查，停在 D4，交给用户在浏览器实机点击验证。
 
-- C1  POST /api/sync/push：批量收记录，逐条 LWW，服务端分配递增 rev，回传被拒条目
-- C2  GET  /api/sync/pull?since=<rev>：回传 rev > since 的记录（含墓碑）+ latest_rev
-- C3  POST /api/sync/poster 上传 / GET /api/sync/poster?uid= 下载
-- C4  GET  /api/sync/state：回传 latest_rev（握手/探活用）
-
-做完停下来，把 C5（你给我 curl 命令、我来跑）交给我验证。
-
-硬约束：
-
-- 只跑"能不能编译过"的检查（go build / cargo check / npm run build）。
-  不要写测试脚手架，不要写 UI 自动化测试；实机运行与界面点击验证全部交给用户
-- 服务端端口默认仍是 2233（`-port` 可改，验证时用 2333 与线上服务并存）；现有 REST API 的行为不要改变，浏览器端要继续可用
-- 动数据之前先备份（anime.db 与 posters/ 都不进仓库）
-- 环境变量在 ~/.zshrc 的 >>> sakurareel toolchain >>> 区块
-  （JAVA_HOME / ANDROID_HOME / NDK_HOME / GOPROXY）；工具链重装跑 scripts/setup-toolchain.sh
-- mac 自带 bash 3.2：变量名后面紧跟全角括号会被吞，一律写 ${VAR}
+硬约束：现有 REST 和同步 API 行为不变，浏览器端继续可用；UI 外观与交互不改。
+只做编译检查，不写测试脚手架、UI 自动化或 E2E。动 anime.db 或 posters/ 前先备份。
 ```
 
-## 这个项目在做什么
+## 项目与进度
 
-把 `MAL`（Go + React 的局域网 Web 应用）改造成 Windows / macOS / iOS / Android 四端 App：
-复用现有 React 界面装进 Tauri v2 外壳，数据每端本地 SQLite（离线全功能），服务端在线时双向同步；
-浏览器访问照旧保留。
+目标是一套 React UI 运行在 Windows / macOS / iOS / Android 的 Tauri v2 App 中；各端本地 SQLite 离线可用，服务端在线时双向同步，浏览器入口继续保留。计划和分工以 [PLAN.md](PLAN.md) 为准。
 
-## 当前状态
-
-**阶段 A ✅**：仓库骨架（`ui/` `src-tauri/` `server/` `docs/` `scripts/`）+ 四端工具链全部装好并验证过。
-已 `git init`（分支 `main`），阶段 A 提交为 `v0.1`。
-
-**阶段 B ✅（v0.2，已提交并打 tag）**：
-
-- `server/` 里是搬进来的 MAL 后端（模块名仍是 `mal`）；前端产物临时放 `server/frontend/dist`（阶段 D 换 `ui/dist`）。
-- `anime` 表加了 `uid`（UUID v4）/ `updated_at` / `deleted_at` / `server_rev`，新增 `rev` 计数器表与 `meta` 表，
-  删掉历史列 `home_position` / `ranking_position`。
-- 一次性迁移：`go run ./cmd/migrate -data <数据目录>`（幂等）——补 uid、补 updated_at（取 created_at）、
-  海报改名 `<uid>.<ext>`；服务端与迁移命令都支持 `-data`，方便对着副本跑。
-- DELETE 改成写墓碑 + 保留海报文件；所有读路径过滤墓碑，浏览器行为不变。
-- 服务端 `appVersion` 1.2.1 → 1.3.0。
-
-服务端跑法：`go run .`（默认 2233）；对着数据副本验证用 `go run . -data <数据目录> -port 2333`。
-阶段 B 的完整记录（含 B6 验证）见 [../DEVLOG.md](../DEVLOG.md)。
-数据备份在 `/Users/zzf/code/MAL-backup-20260922-stageB/`。
-
-## 不要推翻的决策
-
-| 决策点 | 选择 |
-|---|---|
-| UI | 复用现有 React，装进 Tauri v2 外壳，四端一套代码 |
-| 数据 | 各端本地 SQLite + 服务端在线时同步（服务端不是唯一数据源） |
-| 冲突 | 记录级后写覆盖（LWW）+ 删除墓碑 |
-| 删除 | 写 `deleted_at` 墓碑，不物理删行；海报文件保留（同步后统一回收孤儿） |
-| 发布 | 自用不上架 |
-| 浏览器入口 | 保留，现有 REST API 不动，只新增同步接口 |
-| 多语言 | 本次不做 |
-| 海报命名 | `<uid>.<ext>`（不再用标题命名） |
-| `uid` | UUID v4（36 字符带连字符）；同时也是海报文件名的前缀 |
-| `rev` | 全局递增计数器（`rev` 表单行）；服务端每次写操作分配，客户端按 `since` 增量拉取 |
-| 初始数据 | 只用 MAL 的 127 条（另有 6 个无引用的孤儿海报文件，保留不动） |
-
-## 环境事实
-
-| 工具 | 版本 | 位置 |
+| 阶段 | 状态 | 要点 |
 |---|---|---|
-| Rust | 1.98.1 | `~/.cargo/bin` |
-| Node | v24.9.0 | `~/.local/node` |
-| Go | 1.27.1 | `~/.local/go` |
-| Temurin JDK 21 | 21.0.12.1 | `~/.local/jdk-21` |
-| Android SDK + NDK | android-36 / build-tools 36.0.0 / NDK 27.3.13750724 | `~/Library/Android/sdk` |
-| Xcode | 27.0（iOS 27.0 SDK） | 系统自带 |
+| A | ✅ `v0.1` | 仓库骨架和四端工具链 |
+| B | ✅ `v0.2` | Go 服务端搬入、同步字段、一次性迁移；用户已验证浏览器行为 |
+| C1–C4 | ✅ `v0.3` | Go 同步接口；仅 `go build ./...` 通过 |
+| C5 | 待用户确认 | curl 推、拉、海报上传下载命令已在上一窗口交付；没有收到结果 |
+| D1–D3 | 下一窗口执行 | 前端搬入 `ui/`，抽数据接口，接回现有页面 |
+| D4 | 【用户】 | 浏览器逐项点击验证；到此停止 |
 
-`tauri` crate 2.11.6、`@tauri-apps/cli` 2.11.5、`rusqlite` 0.40.2 均可达；crates.io 与 npmmirror 都已验证能拉包。
-Go 模块缓存最初是空的，`go build` 会从 goproxy.cn 拉依赖（偶尔 IPv6 抖动，重试即可）。
+## 阶段 C 已有的接口
 
-## 分工（用户明确要求过）
+`server/main.go` 注册 `POST /api/sync/push`、`GET /api/sync/pull?since=N`、`POST/GET /api/sync/poster`、`GET /api/sync/state`。数据库逻辑在 `server/internal/db/sync.go`，HTTP 处理在 `server/internal/handler/sync.go`。协议详情见 [../server/README.md](../server/README.md)。
 
-- **我做**：写代码、配构建、跑编译检查。
-- **用户做**：装工具链之外的实机验证、真机装包、点界面、看数据对不对。
-- **不写**：UI 自动化测试、E2E、快照测试。同步合并逻辑要不要加少量 Rust 单测，等用户发话。
+- push 每批 1–100 条，以 `uid` 识别记录；`updated_at` 严格较新的版本获胜，相等拒绝；已删除的同 `uid` 不复活。逐条分配服务端 `server_rev`，返回 `accepted`、`rejected`（含服务端记录）和 `latest_rev`。
+- pull 取 `server_rev > since` 的行，**包含墓碑**，记录与 `latest_rev` 来自同一数据库快照。
+- 海报用 `<uid>.<ext>`；上传 multipart 字段为 `uid`、`server_rev`、`poster`，10MB 上限；下载 `?uid=` 返回图片字节。上传须匹配当前记录修订号，文件传输不递增 rev。
+- 现有 `/api/anime*`、`/api/upload`、`/api/posters/*` 未改；默认端口仍为 2233，`-port 2333` 可与线上服务并存。
 
-计划里每个 **【你】** 步骤都是用户的活，做完就停下交接，不要自己往下推。
+## 阶段 D 接手要点
+
+- 前端来源：`/Users/zzf/code/MAL/frontend`。目前 `ui/` 是骨架；`server/frontend/dist` 是阶段 B 临时纳入仓库的旧产物。D1 要从 `ui/` 源码构建，不再手改旧产物；页脚版本号需在源码正式改成 `v0.3` 或下一阶段版本。
+- 前端 API 集中在 `frontend/src/hooks/useAnime.ts`，另外 `LeaderBoard.tsx` 有两处 `request()`。迁移时保持调用语义和响应形状。D2/D3 是纯重构，界面不应变化。
+- `go:embed` 不能用 `../ui/dist` 引用 Go package 目录外文件。D1 需要设计构建产物进入 Go 可嵌入路径的方式，同时保持 `ui/dist` 为前端构建产物，并让 `go build` 继续通过。不要让浏览器入口失效。
+- Node v24.9.0、npm 11.6.0 已在 `~/.local/node`；MAL 旧 `node_modules` 含 macOS 原生依赖，搬入后建议在 `ui/` 重新安装。npm registry 是 npmmirror。
+- 数据目录由服务端 `-data` 指定，默认仍在程序所在目录（`go run` 时为当前目录）。`anime.db` 与 `posters/` 不进仓库；已有阶段 B 备份在 `/Users/zzf/code/MAL-backup-20260922-stageB/`。新验证请先复制数据，再用 2333 端口。
+
+## 保持的决策与分工
+
+React UI 复用、Tauri v2 四端外壳、各端本地 SQLite、记录级 LWW + 删除墓碑、`uid` 为 UUID v4、海报以 uid 命名；浏览器现有 REST 行为保留。多语言本次不做。
+
+我负责代码和编译检查；用户负责实机运行、点击界面和数据核对。计划中每个 **【你】** 步骤都必须停下来交给用户。只跑 `go build` / `cargo check` / `npm run build`，不写测试脚手架、UI 自动化、E2E 或快照测试。
+
+环境变量位于 `~/.zshrc` 的 `>>> sakurareel toolchain >>>` 区块；重装用 `scripts/setup-toolchain.sh`。macOS 自带 bash 3.2 中变量名紧跟全角括号会被吞，写 `${VAR}`。

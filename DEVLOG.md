@@ -198,3 +198,14 @@ go run . -data ~/code/sr-b6 -port 2333     # 浏览器打开 http://localhost:23
   以后不再手改产物。
 - 服务端自身的 `appVersion` 是 `1.3.0`（沿用 MAL「每次迭代递增」的惯例）：
   `curl http://localhost:2233/api/version` 可确认。
+
+---
+
+## 2026-09-23 — 阶段 C（C1–C4）：Go 同步接口
+
+- 新增 `POST /api/sync/push`：按 `uid` 批量合并记录，每批 1–100 条、JSON 最多 1MB。已有记录以 `updated_at` 严格较晚者为胜；相等时拒绝。墓碑不能被同 `uid` 的普通记录复活。每条成功写入在同一事务里取得新 `server_rev`；返回 `accepted` 的服务端记录、`rejected` 的 `uid` / `reason` / 当前服务端记录，以及 `latest_rev`。数据库错误会回滚整批。
+- 新增 `GET /api/sync/pull?since=N`：从一致的数据库快照取 `server_rev > N` 的行，含墓碑，按修订号升序；一起返回该快照的 `latest_rev`。`GET /api/sync/state` 只返回 `latest_rev`。
+- 新增 `POST /api/sync/poster`（multipart：`uid` / `server_rev` / `poster`，10MB 上限）与 `GET /api/sync/poster?uid=`。上传只接受记录当前 `poster` 所指的 `<uid>.<ext>` 图片，且须匹配当前修订号；下载也支持墓碑的保留图片。文件传输不分配新 rev。
+- 现有 REST 路由、默认端口 2233、嵌入的浏览器前端均未改。接口契约详见 `server/README.md`。
+- 只执行 `go build ./...`，通过；没有启动服务、操作数据或执行实机验证。**C5 留给用户**：在新数据副本上以 2333 端口运行，用 curl 推送、拉取和上传下载海报。
+- **SakuraReel-Multi v0.3**：阶段 C 的 C1–C4 代码和协议文档已提交并打 tag。C5 命令已交付，但尚未收到用户验证结果；下一个窗口从阶段 D 的 D1–D3 开始，D4 交用户验证。

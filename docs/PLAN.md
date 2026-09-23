@@ -91,10 +91,10 @@
 
 | 步骤 | 内容 | 验收 |
 |---|---|---|
-| C1 | `POST /api/sync/push`：批量收记录，逐条 LWW，服务端分配递增 `rev`，回传被拒条目 | 我：`go build` |
-| C2 | `GET /api/sync/pull?since=<rev>`：回传 `rev > since` 的记录（含墓碑）+ `latest_rev` | 我：`go build` |
-| C3 | `POST /api/sync/poster` 上传 / `GET /api/sync/poster?uid=` 下载 | 我：`go build` |
-| C4 | `GET /api/sync/state`：回传 `latest_rev`（握手/探活用） | 我：`go build` |
+| C1 | `POST /api/sync/push`：批量收记录，逐条 LWW，服务端分配递增 `rev`，回传被拒条目 | ✅ `go build` |
+| C2 | `GET /api/sync/pull?since=<rev>`：回传 `rev > since` 的记录（含墓碑）+ `latest_rev` | ✅ `go build` |
+| C3 | `POST /api/sync/poster` 上传 / `GET /api/sync/poster?uid=` 下载 | ✅ `go build` |
+| C4 | `GET /api/sync/state`：回传 `latest_rev`（握手/探活用） | ✅ `go build` |
 | **C5** | **你验证**：我给你几条现成 `curl` 命令，你推一条、拉一条、下一个海报，看结果对不对 | **【你】** |
 
 ---

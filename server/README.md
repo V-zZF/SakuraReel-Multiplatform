@@ -67,4 +67,20 @@ go run ./cmd/migrate -data ~/some/data-copy   # 幂等，可反复跑
 - 删除是**写墓碑**（不打真删行），海报文件也**保留**在磁盘上：其他设备拉到这条记录时还要能取到图。
   孤儿海报（含 MAL 里本来就没被引用的 6 个文件）留待后续阶段统一回收。
 - 排序写路径会逐条刷新 `updated_at` / `server_rev`；同分类 position 压缩、月份组位移也会顺带刷。
-- 同步接口（`/api/sync/push|pull|poster|state`）在阶段 C 加，现有 REST 不动。
+- 同步接口（`/api/sync/push|pull|poster|state`）已在阶段 C 新增，现有 REST 不动。
+
+## 同步接口（阶段 C）
+
+所有 JSON 响应沿用 `{ "ok": true, "data": ... }`；错误为 `{ "ok": false, "error": "..." }`。
+
+| 接口 | 请求 | `data` |
+|---|---|---|
+| `POST /api/sync/push` | `{ "records": [Anime, ...] }`，每批 1–100 条、JSON 最多 1MB | `{ "accepted": [Anime, ...], "rejected": [{ "uid", "reason", "server": Anime }], "latest_rev" }` |
+| `GET /api/sync/pull?since=N` | `N` 为非负整数，首次用 0 | `{ "records": [Anime, ...], "latest_rev" }`；按 `server_rev` 升序，包含墓碑 |
+| `GET /api/sync/state` | 无 | `{ "latest_rev" }` |
+| `POST /api/sync/poster` | multipart：`uid`、`server_rev`、`poster` 文件，最多 10MB | `{ "uid", "poster", "server_rev" }` |
+| `GET /api/sync/poster?uid=UUID` | 无 | 原始图片字节（也可下载墓碑记录保留的图片） |
+
+`Anime` 字段见 `internal/model/anime.go`。push 按 `uid` 识别记录，忽略客户端传来的 `id` 与 `server_rev`；返回的 accepted 项带服务端分配的值。`updated_at`、`created_at`、`deleted_at` 用 `YYYY-MM-DD HH:MM:SS`。已有记录只接受**严格晚于**服务端 `updated_at` 的版本；相等也拒绝，避免同秒更新反复覆盖。已删除的 `uid` 不接受普通记录复活，新增请用新 `uid`。被拒项的 `reason` 为 `stale` 或 `deleted`，`server` 是当前完整服务端记录。一个批次内逐条处理，数据库错误则整个批次回滚。
+
+海报文件名必须等于记录的 `poster` 字段（`<uid>.<ext>`），上传扩展名和图片内容必须一致。上传须带当前记录的 `server_rev`，过期返回 409；先 push 带 `poster` 的记录，再用 accepted 项的 `server_rev` 上传图片。海报上传只传文件，不改变记录或递增 `rev`。

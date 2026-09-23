@@ -95,6 +95,13 @@ func main() {
 	// 海报图片静态服务
 	mux.HandleFunc("GET /api/posters/{filename}", handler.ServePosters)
 
+	// 多端同步（不改变浏览器现有 REST API）
+	mux.HandleFunc("POST /api/sync/push", handler.SyncPush)
+	mux.HandleFunc("GET /api/sync/pull", handler.SyncPull)
+	mux.HandleFunc("POST /api/sync/poster", handler.SyncUploadPoster)
+	mux.HandleFunc("GET /api/sync/poster", handler.SyncDownloadPoster)
+	mux.HandleFunc("GET /api/sync/state", handler.SyncState)
+
 	// 前端 SPA：嵌入的 React 应用
 	mux.Handle("/", spaHandler(distFS))
 
