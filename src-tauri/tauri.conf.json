@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SakuraReel",
+  "version": "0.5.0",
+  "identifier": "com.vzzf.sakurareel",
+  "build": {
+    "beforeDevCommand": "npm run dev -- --host 0.0.0.0 --port 1420 --strictPort",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../ui/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SakuraReel",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 860,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/posters/*"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
+    }
+  }
+}

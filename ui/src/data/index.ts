@@ -1,5 +1,7 @@
 import type { Anime, AnimeInput } from '../types';
 import { httpData } from './http';
+import { tauriData, initializeTauriData } from './tauri';
+import { isTauri } from '@tauri-apps/api/core';
 
 export interface AnimeData {
   list(category?: string): Promise<Anime[]>;
@@ -11,6 +13,8 @@ export interface AnimeData {
   posterUrl(filename: string): string;
 }
 
-// D 阶段只接浏览器 HTTP；E 阶段在这里按运行环境选择 Tauri 实现。
-export const data: AnimeData = httpData;
+export const data: AnimeData = isTauri() ? tauriData : httpData;
+export const initializeData = async (): Promise<void> => {
+  if (isTauri()) await initializeTauriData();
+};
 export const posterUrl = (filename: string): string => data.posterUrl(filename);

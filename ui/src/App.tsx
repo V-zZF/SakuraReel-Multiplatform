@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent, CollisionDetection } from '@dnd-kit/core';
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import { useAnime } from './hooks/useAnime';
 import type { Anime, AnimeInput } from './types';
 import NavBar from './components/NavBar';
@@ -122,16 +122,18 @@ export default function App() {
       return;
     }
 
-    setAnimeList((prev) => {
-      const oldIdx = prev.findIndex((a) => a.id === active.id);
-      const newIdx = prev.findIndex((a) => a.id === over.id);
-      if (oldIdx === -1 || newIdx === -1) return prev;
-      const newList = arrayMove(prev, oldIdx, newIdx);
-      const updated = newList.map((a, i) => ({ ...a, position: i }));
-      reorder('home', updated.map((a, i) => ({ id: a.id, position: i })));
-      return updated;
+    const oldIdx = sortedList.findIndex((a) => a.id === active.id);
+    const newIdx = sortedList.findIndex((a) => a.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    const items = arrayMove(sortedList, oldIdx, newIdx)
+      .map((a, position) => ({ id: a.id, position }));
+    const positions = new Map(items.map((item) => [item.id, item.position]));
+    setAnimeList((prev) => prev.map((a) => ({ ...a, position: positions.get(a.id) ?? a.position })));
+    void reorder('home', items).catch(() => {
+      showToast('排序保存失败，请重试', 'error');
+      void fetchList(activeCategory);
     });
-  }, [reorder, sortedList, showToast]);
+  }, [activeCategory, fetchList, reorder, setAnimeList, sortedList, showToast]);
 
   // 拖拽取消
   const handleDragCancel = useCallback(() => {
@@ -306,7 +308,7 @@ export default function App() {
                   >
                     <SortableContext
                       items={sortedList.map((a) => a.id)}
-                      strategy={verticalListSortingStrategy}
+                      strategy={rectSortingStrategy}
                       disabled={!isEditing}
                     >
                       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))]
@@ -343,7 +345,7 @@ export default function App() {
 
             {/* 页脚署名 */}
             <footer className="text-center py-6 pb-24">
-              <span className="text-xs text-[#C7C7CC]">Made by VzZF · v0.4</span>
+              <span className="text-xs text-[#C7C7CC]">Made by VzZF · v0.5</span>
             </footer>
           </motion.div>
         )}
@@ -358,7 +360,7 @@ export default function App() {
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700
+          className="fixed bottom-[calc(1.5rem+var(--safe-bottom))] right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700
                      text-white rounded-full shadow-lg flex items-center justify-center
                      text-2xl transition-colors duration-200 z-40"
           title="添加番剧"

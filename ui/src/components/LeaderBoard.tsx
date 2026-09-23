@@ -31,8 +31,9 @@ function SortableLeaderItem({ anime, index, onEdit, disabled }: SortableLeaderIt
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 200ms ease',
+    transition,
     zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0 : 1,
   };
 
   // 排名颜色（前三名特殊）
@@ -51,20 +52,21 @@ function SortableLeaderItem({ anime, index, onEdit, disabled }: SortableLeaderIt
   }
 
   return (
-    <motion.div
-      ref={setNodeRef}
-      variants={listItem}
-      style={style}
-      whileHover={disabled ? { scale: 1.01 } : undefined}
-      whileTap={disabled ? { scale: 0.99 } : undefined}
-      onClick={() => {
-        if (disabled) onEdit(anime);
-      }}
-      animate={isDragging ? { opacity: 0 } : undefined}
-      className={`bg-white rounded-card overflow-hidden shadow-leaderboard hover:shadow-leaderboard-hover
-                 flex items-stretch transition-shadow relative
-                 ${disabled ? 'cursor-pointer' : ''}`}
-    >
+    <div ref={setNodeRef} style={style} className="relative">
+      <motion.div
+        variants={listItem}
+        initial="hidden"
+        animate="visible"
+        whileHover={disabled ? { y: -2, scale: 1.005 } : undefined}
+        whileTap={disabled ? { scale: 0.99 } : undefined}
+        transition={{ type: 'spring', stiffness: 260, damping: 24, mass: 0.75 }}
+        onClick={() => {
+          if (disabled) onEdit(anime);
+        }}
+        className={`bg-white rounded-card overflow-hidden shadow-leaderboard hover:shadow-leaderboard-hover
+                   flex items-stretch transition-[box-shadow] duration-300 ease-out relative
+                   ${disabled ? 'cursor-pointer' : ''}`}
+      >
       {/* 拖拽手柄（编辑模式下显示，仅此处可拖拽） */}
       {!disabled && (
         <div
@@ -126,7 +128,8 @@ function SortableLeaderItem({ anime, index, onEdit, disabled }: SortableLeaderIt
           )}
         </div>
       </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -252,7 +255,10 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
     });
 
     // 持久化
-    data.reorder('leaderboard', items).catch(() => {});
+    void data.reorder('leaderboard', items).catch(() => {
+      onToast?.('排序保存失败，请重试', 'error');
+      void data.list().then(setAnimeList).catch(() => {});
+    });
   }, [onToast]);
 
   // 拖拽取消

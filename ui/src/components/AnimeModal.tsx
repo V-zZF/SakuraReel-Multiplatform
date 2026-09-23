@@ -159,7 +159,7 @@ export default function AnimeModal({
             className={`
               relative bg-white shadow-modal z-10 flex flex-col
               sm:rounded-modal sm:max-w-lg sm:w-[calc(100%-32px)] sm:max-h-[90vh] sm:m-4
-              max-sm:rounded-t-modal max-sm:w-full max-sm:max-h-[85vh]
+              max-sm:rounded-t-modal max-sm:w-full max-sm:max-h-[85vh] max-sm:pb-[var(--safe-bottom)]
             `}
           >
             {/* 移动端拖拽指示条 */}

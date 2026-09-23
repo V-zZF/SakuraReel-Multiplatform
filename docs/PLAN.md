@@ -95,7 +95,7 @@
 | C2 | `GET /api/sync/pull?since=<rev>`：回传 `rev > since` 的记录（含墓碑）+ `latest_rev` | ✅ `go build` |
 | C3 | `POST /api/sync/poster` 上传 / `GET /api/sync/poster?uid=` 下载 | ✅ `go build` |
 | C4 | `GET /api/sync/state`：回传 `latest_rev`（握手/探活用） | ✅ `go build` |
-| **C5** | **你验证**：我给你几条现成 `curl` 命令，你推一条、拉一条、下一个海报，看结果对不对 | **【你】** |
+| **C5** | **你验证**：我给你几条现成 `curl` 命令，你推一条、拉一条、下一个海报，看结果对不对 | ✅ 用户确认无问题 |
 
 ---
 
@@ -106,7 +106,7 @@
 | D1 | `MAL/frontend` 搬进 `ui/`；构建生成 `ui/dist` 并同步到 Go 可嵌入的 `server/frontend/dist` | ✅ `npm run build` + `go build` |
 | D2 | 抽 `ui/src/data/`：定统一接口 + 先只实现 `http.ts` | ✅ `npm run build` |
 | D3 | 把 `hooks/useAnime.ts` 与 `LeaderBoard.tsx` 两处 `request()` 重接到 `data/` | ✅ `npm run build` |
-| **D4** | **你验证**：浏览器里逐项点一遍（三个分类、排行榜、增删改、上传海报、拖拽排序、播放按钮），行为与改动前一致 | **【你】** |
+| **D4** | **你验证**：浏览器里逐项点一遍（三个分类、排行榜、增删改、上传海报、拖拽排序、播放按钮），行为与改动前一致 | ✅ 用户确认无问题 |
 
 > 这一步是纯重构，界面和交互**不该有任何变化**。有任何不同都是 bug，交回给我。
 
@@ -116,15 +116,15 @@
 
 | 步骤 | 内容 | 验收 |
 |---|---|---|
-| E1 | `src-tauri/` 初始化，最小窗口能显示现有 UI | 我：`cargo check` |
-| **E2** | **你验证**：macOS 上双击能打开窗口、能看到界面 | **【你】** |
-| E3 | Rust 建表 + CRUD：`list` / `get` / `create` / `update` / `delete` / `reorder`，语义照搬 Go | 我：`cargo check` |
-| E4 | Rust 海报：保存字节到本地 `posters/`、读取、用 asset 协议给 WebView 显示 | 我：`cargo check` |
-| E5 | 前端加 `data/tauri.ts`，按运行环境自动选实现；`posterSrc()` 两套 | 我：`npm run build` |
-| E6 | 上传改走 HTML 文件选择框 → 字节 → `invoke`（四端通用，不碰原生选择器插件） | 我：`npm run build` |
-| **E7** | **你验证**：macOS App 里增删改、传海报、拖拽排序、排行榜全对 | **【你】** |
-| E8 | Windows 打包（NSIS 安装包 + WebView2） | 我：出一份安装包 |
-| **E9** | **你验证**：Windows 上装一次，打开看一眼 | **【你】** |
+| E1 | `src-tauri/` 初始化，最小窗口能显示现有 UI | ✅ `cargo check`；窗口待 E2 实机确认 |
+| **E2** | **你验证**：macOS 上双击能打开窗口、能看到界面 | ✅ 用户确认无问题 |
+| E3 | Rust 建表 + CRUD：`list` / `get` / `create` / `update` / `delete` / `reorder`，语义照搬 Go | ✅ `cargo check`；实机待集中验证 |
+| E4 | Rust 海报：保存字节到本地 `posters/`、读取、用 asset 协议给 WebView 显示 | ✅ `cargo check`；实机待集中验证 |
+| E5 | 前端加 `data/tauri.ts`，按运行环境自动选实现；`posterSrc()` 两套 | ✅ `npm run build`；实机待集中验证 |
+| E6 | 上传改走 HTML 文件选择框 → 字节 → `invoke`（四端通用，不碰原生选择器插件） | ✅ `npm run build`；实机待集中验证 |
+| **E7** | **你验证**：macOS App 里增删改、传海报、拖拽排序、排行榜全对 | 待集中验证（用户要求后面统一测试） |
+| E8 | Windows 打包（NSIS 安装包 + WebView2） | 构建脚本已备；待 Windows 环境出安装包 |
+| **E9** | **你验证**：Windows 上装一次，打开看一眼 | 待集中验证（用户要求后面统一测试） |
 
 ---
 
@@ -132,7 +132,7 @@
 
 | 步骤 | 内容 | 验收 |
 |---|---|---|
-| F1 | iOS 工程初始化；`Info.plist` 配 ATS 局域网放行 + 本地网络权限说明；补安全区内边距 | 我：能出 Xcode 工程 |
+| F1 | iOS 工程初始化；`Info.plist` 配 ATS 局域网放行 + 本地网络权限说明；补安全区内边距 | ✅ Xcode 工程已生成，iOS 27 模拟器启动成功 |
 | **F2** | **你验证**：侧载到 iPhone，能打开、能滚动、能点 | **【你】** |
 | F3 | Android 工程初始化；放行局域网明文 HTTP；返回手势 = 回首页 / 关弹窗 | 我：能出 APK |
 | **F4** | **你验证**：装 APK，能用 | **【你】** |

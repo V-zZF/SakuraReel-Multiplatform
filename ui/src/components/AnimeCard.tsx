@@ -34,6 +34,7 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
   return (
     <div
       className="bg-white rounded-card overflow-hidden shadow-card hover:shadow-card-hover
+                 transition-[box-shadow] duration-300 ease-out
                  cursor-pointer group"
       onClick={(e) => {
         // 拖拽中不触发点击
@@ -50,7 +51,7 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
           <img
             src={posterUrl(anime.poster)}
             alt={anime.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
             loading="lazy"
           />
         ) : (

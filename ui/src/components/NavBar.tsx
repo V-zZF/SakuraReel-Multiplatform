@@ -25,7 +25,7 @@ export default function NavBar({
       initial={{ y: -48, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 250, damping: 22, delay: 0.05 }}
-      className="glass sticky top-0 z-50 border-b border-[#E5E5EA]/50"
+      className="glass sticky top-0 z-50 border-b border-[#E5E5EA]/50 pt-[var(--safe-top)]"
     >
       <div className="max-w-[1600px] mx-auto px-4 py-4 relative">
         {/* 排行榜模式 */}

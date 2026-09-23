@@ -1,7 +1,7 @@
 # 编译产物
 /target
 src-tauri/target/
-src-tauri/gen/
+src-tauri/gen/schemas/
 
 # Rust
 *.rs.bk

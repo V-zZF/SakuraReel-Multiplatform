@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0EC7DABDB8F2ED46015E88E2 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BC66BC384A00239D16B3B303 /* libapp.a */; };
+		19E23C63AD26B058E7E40C86 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 162A5302778797E705441D73 /* LaunchScreen.storyboard */; };
+		1EF0247CD9A372355C7101AF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 10042F28559FE3E2C10C18C2 /* assets */; };
+		33DE3D1E35B7E0410E036889 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F98D235A307A654E8CDA41A9 /* WebKit.framework */; };
+		4DA9C52A34471ED92B3E3B74 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB863CF9BB70A7D840E18818 /* Metal.framework */; };
+		6DC4A8556A049487F6EC9FF2 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = C61D514F83D794B897A9B7CA /* main.mm */; };
+		7DA04C640465B8F8A4A7D0C2 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFC82E1979FF6586D798449 /* MetalKit.framework */; };
+		8C5A51C245470317DB4E29E2 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9741862A5E4E0FDFEE8FCE14 /* UIKit.framework */; };
+		A0740C9CD11423108FFBDD80 /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 124D528CF0B627C11393489E /* libapp.a */; };
+		B183663095E2238A1DB62053 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99DB97B14C1194CAE77048B5 /* Security.framework */; };
+		C89B700C1A1EC532281C6CCC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0A3CF8EB1CB8E9B6FE93392 /* Assets.xcassets */; };
+		DBE08433B5F3FAB817A56AB8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48CC0342507F35ACF154357 /* CoreGraphics.framework */; };
+		DD61F50367D41E0247496B9C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92696D91644CD48572CDC760 /* QuartzCore.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		03539FC27D647FDC2EC210FB /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		10042F28559FE3E2C10C18C2 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		124D528CF0B627C11393489E /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		162A5302778797E705441D73 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		24E0295D1A2E2C67FD876CB2 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		3CFC82E1979FF6586D798449 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		3D965661304DDDC16728B256 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4F2AC9B066F0C0CB69E64B95 /* sakurareel_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = sakurareel_iOS.entitlements; sourceTree = "<group>"; };
+		7C74C0042E27CBE9C22D8DAC /* local.rs */ = {isa = PBXFileReference; path = local.rs; sourceTree = "<group>"; };
+		92696D91644CD48572CDC760 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		96DFFBA4C72136C83156C6FD /* sakurareel_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = sakurareel_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9741862A5E4E0FDFEE8FCE14 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		99DB97B14C1194CAE77048B5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		B475AA93A0146EF1E816FA97 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		BC66BC384A00239D16B3B303 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		C61D514F83D794B897A9B7CA /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		CB863CF9BB70A7D840E18818 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		D0A3CF8EB1CB8E9B6FE93392 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D48CC0342507F35ACF154357 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		F98D235A307A654E8CDA41A9 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		74908EE8A7B4E3DF57AD74F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0EC7DABDB8F2ED46015E88E2 /* libapp.a in Frameworks */,
+				DBE08433B5F3FAB817A56AB8 /* CoreGraphics.framework in Frameworks */,
+				4DA9C52A34471ED92B3E3B74 /* Metal.framework in Frameworks */,
+				7DA04C640465B8F8A4A7D0C2 /* MetalKit.framework in Frameworks */,
+				DD61F50367D41E0247496B9C /* QuartzCore.framework in Frameworks */,
+				B183663095E2238A1DB62053 /* Security.framework in Frameworks */,
+				8C5A51C245470317DB4E29E2 /* UIKit.framework in Frameworks */,
+				33DE3D1E35B7E0410E036889 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0EFB568FF947820F1724B9DA /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				A15A1080723B5BAA9651D7DA /* debug */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
+		2CEDAD74F6502E4A951F7B0D /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				24E0295D1A2E2C67FD876CB2 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		6125D4F285D028B2A7D776B4 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				0EFB568FF947820F1724B9DA /* arm64 */,
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		89572ACB17B9CEA415D4F8B8 /* sakurareel */ = {
+			isa = PBXGroup;
+			children = (
+				C61D514F83D794B897A9B7CA /* main.mm */,
+				2CEDAD74F6502E4A951F7B0D /* bindings */,
+			);
+			path = sakurareel;
+			sourceTree = "<group>";
+		};
+		9BA1E69A7A4435AB4FC86E39 /* sakurareel_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3D965661304DDDC16728B256 /* Info.plist */,
+				4F2AC9B066F0C0CB69E64B95 /* sakurareel_iOS.entitlements */,
+			);
+			path = sakurareel_iOS;
+			sourceTree = "<group>";
+		};
+		A15A1080723B5BAA9651D7DA /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				124D528CF0B627C11393489E /* libapp.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
+		AD1E94AE3B1B2EF801A44AD2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				89572ACB17B9CEA415D4F8B8 /* sakurareel */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		B4AB8C7A2F0E0C0CD9CB62F0 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B475AA93A0146EF1E816FA97 /* lib.rs */,
+				7C74C0042E27CBE9C22D8DAC /* local.rs */,
+				03539FC27D647FDC2EC210FB /* main.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		C56F9AC2FA80ECC02CF6C2B3 = {
+			isa = PBXGroup;
+			children = (
+				10042F28559FE3E2C10C18C2 /* assets */,
+				D0A3CF8EB1CB8E9B6FE93392 /* Assets.xcassets */,
+				162A5302778797E705441D73 /* LaunchScreen.storyboard */,
+				6125D4F285D028B2A7D776B4 /* Externals */,
+				9BA1E69A7A4435AB4FC86E39 /* sakurareel_iOS */,
+				AD1E94AE3B1B2EF801A44AD2 /* Sources */,
+				B4AB8C7A2F0E0C0CD9CB62F0 /* src */,
+				E65961F209F88A17C8EBD984 /* Frameworks */,
+				ECEA9225B9E091AEB5052BAC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E65961F209F88A17C8EBD984 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D48CC0342507F35ACF154357 /* CoreGraphics.framework */,
+				BC66BC384A00239D16B3B303 /* libapp.a */,
+				CB863CF9BB70A7D840E18818 /* Metal.framework */,
+				3CFC82E1979FF6586D798449 /* MetalKit.framework */,
+				92696D91644CD48572CDC760 /* QuartzCore.framework */,
+				99DB97B14C1194CAE77048B5 /* Security.framework */,
+				9741862A5E4E0FDFEE8FCE14 /* UIKit.framework */,
+				F98D235A307A654E8CDA41A9 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		ECEA9225B9E091AEB5052BAC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				96DFFBA4C72136C83156C6FD /* sakurareel_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_65730B2C-BA4B-4E6A-B3B7-C17985D0BB0F" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F91D00AC4F813F66DE206ED8 /* sakurareel_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9E217AC23AF8428B3020A8B /* Build configuration list for PBXNativeTarget "sakurareel_iOS" */;
+			buildPhases = (
+				3C351C87CA4F885F0DF1B14A /* Build Rust Code */,
+				4E44A2707B7A4278230E3CA3 /* Sources */,
+				E78C93F37BD1F28F9ABD439E /* Resources */,
+				74908EE8A7B4E3DF57AD74F8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = sakurareel_iOS;
+			packageProductDependencies = (
+			);
+			productName = sakurareel_iOS;
+			productReference = 96DFFBA4C72136C83156C6FD /* sakurareel_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		222066C4A56EEE2C69291838 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 44A80F65A5DED5C916D13F53 /* Build configuration list for PBXProject "sakurareel" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C56F9AC2FA80ECC02CF6C2B3;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = ECEA9225B9E091AEB5052BAC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F91D00AC4F813F66DE206ED8 /* sakurareel_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E78C93F37BD1F28F9ABD439E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C89B700C1A1EC532281C6CCC /* Assets.xcassets in Resources */,
+				19E23C63AD26B058E7E40C86 /* LaunchScreen.storyboard in Resources */,
+				1EF0247CD9A372355C7101AF /* assets in Resources */,
+				A0740C9CD11423108FFBDD80 /* libapp.a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3C351C87CA4F885F0DF1B14A /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd ../../.. && node ui/node_modules/@tauri-apps/cli/tauri.js ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4E44A2707B7A4278230E3CA3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6DC4A8556A049487F6EC9FF2 /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		13146790E6142290EF4FF54D /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				CODE_SIGN_ENTITLEMENTS = sakurareel_iOS/sakurareel_iOS.entitlements;
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = sakurareel_iOS/Info.plist;
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vzzf.sakurareel;
+				PRODUCT_NAME = SakuraReel;
+				VALID_ARCHS = arm64;
+			};
+			name = release;
+		};
+		150CF4FEB7A5E405B7E15D37 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+			};
+			name = debug;
+		};
+		38F3C1364CBD62D5900B140E /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				CODE_SIGN_ENTITLEMENTS = sakurareel_iOS/sakurareel_iOS.entitlements;
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = sakurareel_iOS/Info.plist;
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vzzf.sakurareel;
+				PRODUCT_NAME = SakuraReel;
+				VALID_ARCHS = arm64;
+			};
+			name = debug;
+		};
+		C7E099E418E629662D16528F /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		44A80F65A5DED5C916D13F53 /* Build configuration list for PBXProject "sakurareel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				150CF4FEB7A5E405B7E15D37 /* debug */,
+				C7E099E418E629662D16528F /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		E9E217AC23AF8428B3020A8B /* Build configuration list for PBXNativeTarget "sakurareel_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				38F3C1364CBD62D5900B140E /* debug */,
+				13146790E6142290EF4FF54D /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 222066C4A56EEE2C69291838 /* Project object */;
+}

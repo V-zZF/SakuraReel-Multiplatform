@@ -1,5 +1,19 @@
 # 开发日志
 
+## 2026-09-23 — macOS / iOS 拖拽与悬浮手感修整
+
+- 首页网格改用 `rectSortingStrategy`；首页和排行榜的 dnd-kit 位移放在外层 DOM，Framer Motion 入场和悬浮动画放在内层，避免两个动画系统同时写 `transform`。
+- 拖动项仅在拖动期间以外层透明度隐藏，结束即恢复；排行榜排序保存失败时提示并重新读取列表。
+- 卡片悬浮改为较轻的弹簧位移与缩放，阴影和海报放大加平滑过渡。首页排序持久化移出 React 状态更新函数。
+- `npm run build`、`npm run lint`、`git diff --check` 通过；lint 仅有既存的 `RatingCircle.tsx` Fast Refresh 警告。iOS 模拟器主界面已重新打开，拖拽动作待用户手动验收。
+
+## 2026-09-23 — F1：iOS 工程与模拟器
+
+- 生成 `src-tauri/gen/apple/` Xcode 工程；部署目标调至 iOS 15。`Info.plist` 配局域网 ATS 和本地网络用途说明。
+- 适配刘海与底部手势区；开发服务器监听局域网地址。Rust 入口拆为 `lib.rs` 与桌面 `main.rs`，供 iOS 编译静态库。
+- Xcode 27 的 iOS 27 模拟器首次启动被 UIKit 的 Scene 生命周期检查中断；按 Tauri/tao 当前配置加入 `UIApplicationSceneManifest` 和 `TaoSceneDelegate` 后，iPhone 18 Pro 模拟器启动成功，主界面可见。
+- Xcode build 成功；CLI 后续 archive 因未配置 Apple 开发团队失败。模拟器 App 已手动安装并启动。真机 F2 验收未做。
+
 ## 2026-09-22 — 多端化项目启动 + 阶段 A（地基）
 
 ### 目标
@@ -218,3 +232,34 @@ go run . -data ~/code/sr-b6 -port 2333     # 浏览器打开 http://localhost:23
 - 编译检查：`npm run build`、`go build ./...` 均通过。没有启动服务或执行浏览器点击。D4 留给用户；C5 仍未收到验证结果。
 
 - **SakuraReel-Multi v0.4**：阶段 D 的 D1–D3 已提交并打 tag；D4 尚未由用户在浏览器验证，C5 结果也仍未知。
+
+## 2026-09-23 — 阶段 E1：Tauri v2 桌面窗口工程
+
+- 用户明确要求继续 E 阶段；D4 与 C5 仍保留待验证状态。
+- 初始化 `src-tauri/`：Tauri v2 配置、Rust 入口、构建脚本和临时图标。开发窗口加载 `ui/` 的 Vite 页面；正式构建使用 `ui/dist`。
+- `ui/` 增加 Tauri CLI；Vite API 代理支持通过 `VITE_API_PROXY_TARGET` 指向数据副本服务，默认值仍为 `http://localhost:2233`。
+- 编译检查：`npm run build` 与 `cargo check` 通过。E2 由用户实机验证；在用户完成 E2 前不进入 E3。
+
+### 本窗口启动尝试与交接
+
+- 用户随后要求我启动 App 并说明验收点。我从阶段 B 备份创建 `/Users/zzf/code/sr-e2/` 数据副本，迁移输出为 127 条记录、133 张海报、基线 rev 127。原库和备份未改。
+- 用 `go run . -data /Users/zzf/code/sr-e2 -port 2333` 启动服务。首次 `tauri dev` 发现 `beforeDevCommand` 的工作目录已经是 `ui/`，原写法 `npm --prefix ui` 错指 `ui/ui/package.json`；已改为 `npm run dev`，构建前命令同样改为 `npm run build`。
+- 修正后 `VITE_API_PROXY_TARGET=http://localhost:2333 npm run tauri -- dev` 完成 Rust 开发构建并运行 `target/debug/sakurareel`。前一次非交互会话随即退出；第二次用交互终端重新启动，但本轮会话被中断。最后核对时，2333、1420 均无监听进程，Tauri 进程也不在运行。**没有收到用户对窗口显示的确认，E2 未通过**。
+- Tauri CLI 从仓库根目录识别 `src-tauri/`；`ui/package.json` 的 `tauri` 脚本因此先切到根目录。临时图标已生成 macOS/Windows/移动端规格，最终图标留待 H1。
+- 本窗口 E1 代码、锁文件与文档仍是未提交工作区改动；没有提交或打 tag。D4、C5 仍待用户验证。
+
+## 2026-09-23 — 阶段 E3–E6：本地 SQLite、海报与前端接线
+
+- 用户确认 C5、D4、E2 均无问题；这三项按用户验收通过记录。用户要求后续实机测试集中做，因此 E7、E9 暂不逐项停下，仍标为待验证。
+- E3：`src-tauri/src/local.rs` 建立 App 数据目录中的 SQLite，表字段与服务端同步结构一致；提供 `list/get/create/update/delete/reorder` Tauri 命令。创建用 UUID v4，删除写墓碑，排序与增删改刷新 `updated_at` 并将 `server_rev` 设为 0，留给阶段 G 同步。主页按月份与位置排序，排行榜按评分与榜单位置排序。
+- E4：海报保存到 App 数据目录的 `posters/`；上传先写临时文件，保存记录时改为 `<uid>.<ext>`。Tauri asset 协议只放行该目录下的文件；删除记录不删海报。
+- E5/E6：增加 `ui/src/data/tauri.ts`，通过 `isTauri()` 在本地命令与浏览器 HTTP 间选择。启动时取得海报目录，`convertFileSrc` 生成 WebView 图片 URL。现有 HTML 文件选择框将图片字节传给 `upload_poster`，无需原生选择器插件。
+- E8 准备：`scripts/build-windows.ps1` 在 Windows 执行 `npm ci` 与 NSIS 构建；配置使用 WebView2 下载引导程序。当前仅有 macOS 环境，尚未产出 Windows 安装包，E8 不记为完成。
+- 编译检查：`cargo check`、`npm run build`、`go build ./...` 均通过；未做实机功能测试。随后安装 rustfmt 并运行 `cargo fmt`。所有本阶段改动尚未提交。
+
+## 2026-09-23 — v0.5 收尾：iOS 模拟器与拖拽交互
+
+- F1：生成 iOS Xcode 工程，处理 iOS 27 Scene 启动要求；模拟器 App 已启动。将项目数据副本中的 127 条记录、133 张海报导入模拟器 App。F2 真机侧载与验收待完成。
+- 根据 macOS/iOS 验收反馈，调整主页与排行榜的拖拽让位、排序后卡片显示及卡片悬浮动画；仍待用户复验。E7、E9 保持待验收状态。
+- 自定义 `.icon` 接入依用户要求推迟；提供的原始文件未改，也未纳入 v0.5。项目中保留 Tauri 工程初始化时生成的临时图标。
+- 将前端版本、页脚和 README 更新为 v0.5。`npm run build`、`cargo check`、`go build ./...` 通过；`npm run lint` 仅有既有的 `RatingCircle.tsx` Fast Refresh 提示。
