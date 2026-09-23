@@ -67,7 +67,7 @@ func main() {
 
 	fmt.Println("✅ 数据库初始化成功")
 
-	// 从嵌入文件系统中提取 frontend/dist 子目录
+	// 从 ui 构建后同步的目录中提取前端资源
 	distFS, err := fs.Sub(embeddedDist, "frontend/dist")
 	if err != nil {
 		log.Fatalf("❌ 前端资源加载失败: %v", err)

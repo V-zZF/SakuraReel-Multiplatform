@@ -209,3 +209,12 @@ go run . -data ~/code/sr-b6 -port 2333     # 浏览器打开 http://localhost:23
 - 现有 REST 路由、默认端口 2233、嵌入的浏览器前端均未改。接口契约详见 `server/README.md`。
 - 只执行 `go build ./...`，通过；没有启动服务、操作数据或执行实机验证。**C5 留给用户**：在新数据副本上以 2333 端口运行，用 curl 推送、拉取和上传下载海报。
 - **SakuraReel-Multi v0.3**：阶段 C 的 C1–C4 代码和协议文档已提交并打 tag。C5 命令已交付，但尚未收到用户验证结果；下一个窗口从阶段 D 的 D1–D3 开始，D4 交用户验证。
+
+## 2026-09-23 — 阶段 D（D1–D3）：前端搬入与数据层抽取
+
+- 将 `MAL/frontend` 源码搬入 `ui/`，在 `ui/` 重新安装依赖；页脚版本号在源码中设为 `v0.4`。
+- `npm run build` 生成 `ui/dist`，并将产物同步到 `server/frontend/dist` 供现有 `go:embed` 托管。Go 不支持从包目录嵌入 `../ui/dist`，所以保留这个构建产物副本。
+- `ui/src/data/index.ts` 定义统一数据接口，`http.ts` 保留原 REST 请求地址、方法、JSON 包装、上传和海报 URL 语义；`useAnime.ts` 和排行榜的两处请求改由该接口调用。UI 布局及交互代码未改。
+- 编译检查：`npm run build`、`go build ./...` 均通过。没有启动服务或执行浏览器点击。D4 留给用户；C5 仍未收到验证结果。
+
+- **SakuraReel-Multi v0.4**：阶段 D 的 D1–D3 已提交并打 tag；D4 尚未由用户在浏览器验证，C5 结果也仍未知。

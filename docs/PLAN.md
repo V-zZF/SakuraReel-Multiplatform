@@ -103,9 +103,9 @@
 
 | 步骤 | 内容 | 验收 |
 |---|---|---|
-| D1 | `MAL/frontend` 搬进 `ui/`，web 构建照旧可用；Go 的 `embed` 路径改到 `ui/dist` | 我：`npm run build` + `go build` |
-| D2 | 抽 `ui/src/data/`：定统一接口 + 先只实现 `http.ts` | 我：`npm run build` |
-| D3 | 把 `hooks/useAnime.ts` 与 `LeaderBoard.tsx` 两处 `request()` 重接到 `data/` | 我：`npm run build` |
+| D1 | `MAL/frontend` 搬进 `ui/`；构建生成 `ui/dist` 并同步到 Go 可嵌入的 `server/frontend/dist` | ✅ `npm run build` + `go build` |
+| D2 | 抽 `ui/src/data/`：定统一接口 + 先只实现 `http.ts` | ✅ `npm run build` |
+| D3 | 把 `hooks/useAnime.ts` 与 `LeaderBoard.tsx` 两处 `request()` 重接到 `data/` | ✅ `npm run build` |
 | **D4** | **你验证**：浏览器里逐项点一遍（三个分类、排行榜、增删改、上传海报、拖拽排序、播放按钮），行为与改动前一致 | **【你】** |
 
 > 这一步是纯重构，界面和交互**不该有任何变化**。有任何不同都是 bug，交回给我。

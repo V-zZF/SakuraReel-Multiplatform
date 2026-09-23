@@ -3,7 +3,7 @@
 个人影视/番剧收藏库。一套 React 界面跑在 **Windows / macOS / iOS / Android** 四个 App 上，
 数据每台设备本地保存（离线全功能），服务端在线时自动双向同步；浏览器访问照旧可用。
 
-> 当前版本：**SakuraReel-Multi v0.3**
+> 当前版本：**SakuraReel-Multi v0.4**
 
 ## 目录
 
@@ -40,3 +40,5 @@ go run . -data <数据目录> -port 2333       # 对着数据副本验证，不�
 **阶段 C（同步接口）**：C1–C4 已完成并通过 `go build`；C5 的 curl 实机验证已交给用户，结果待确认。
 
 下一步：阶段 D —— 搬入 React 前端、抽取数据接口并保持浏览器行为不变。
+
+**阶段 D（前端搬入）**：D1–D3 已完成并通过 `npm run build`、`go build`；D4 浏览器实机验证待用户完成。
