@@ -1,46 +1,35 @@
 # SakuraReel
 
-个人影视/番剧收藏库。一套 React 界面跑在 **Windows / macOS / iOS / Android** 四个 App 上，
-数据每台设备本地保存（离线全功能），服务端在线时自动双向同步；浏览器访问照旧可用。
+个人影视/番剧收藏库。共用 React 界面支持浏览器和 **Windows / macOS / iOS / Android** App。
+浏览器连接 Go 服务端；桌面和移动 App 目前在本地 SQLite 离线工作。App 与服务端的自动同步计划在阶段 G 实现。
 
-> 当前版本：**SakuraReel-Multi v0.5**
+> 当前版本：**SakuraReel v0.6.1**
 
 ## 目录
 
 | 目录 | 内容 | 阶段 |
 |------|------|------|
 | `ui/` | 共用 React 前端（Tailwind + Framer Motion + dnd-kit），Web 与四个 App 都用这一份 | D |
-| `src-tauri/` | Tauri 外壳 + Rust 本地数据库 + 同步引擎 | E / F / G |
+| `src-tauri/src/` | Tauri 命令、Rust SQLite 本地存储和海报管理 | E / F |
+| `src-tauri/gen/apple/` | Tauri 生成的 iOS Xcode 工程 | F |
+| `src-tauri/gen/android/` | Tauri 生成的 Android / Gradle 工程 | F |
 | `server/` | Go 服务端：原有 REST API + 网页托管 + 同步接口 | B / C |
-| `scripts/` | 构建与打包脚本 | H |
-| `docs/` | 计划与规格文档 | — |
+| `scripts/` | 工具链安装与 Windows 构建脚本 | H |
+| `docs/` | 项目计划、进度交接和平台构建指南 | — |
+| `dist/` | 当前可分发构建产物（Android APK） | F |
 
-## 先读这个
+## 当前进度
 
-分步实施计划见 [docs/PLAN.md](docs/PLAN.md)。计划里标 **【你】** 的步骤需要实机验证。
+阶段 A–D 已完成；阶段 E 的 macOS 基础启动通过，Windows 安装包和 macOS 完整功能验收待做；阶段 F 的 iOS 模拟器启动和 Android ARM64 APK 构建已完成，iPhone 真机与 Android 手机验收待做；阶段 G 时光机共用界面已实现，Mac 视觉和交互验收待做；同步阶段 H 尚未开始。
 
-## 当前状态
+安装包：Android ARM64 APK [`dist/SakuraReel-Android-v0.6.1-arm64.apk`](dist/SakuraReel-Android-v0.6.1-arm64.apk)；Apple Silicon macOS DMG [`dist/SakuraReel-macOS-v0.6.1-arm64.dmg`](dist/SakuraReel-macOS-v0.6.1-arm64.dmg)。Android APK 已签名并校验，macOS DMG 已校验；尚未在实体设备安装验收。
 
-**阶段 A（地基）✅**：目录骨架已就位，四端工具链已装好（Rust 1.98.1 / Node 24.9.0 / Go 1.27.1 / JDK 21 / Android SDK+NDK 27.3 / Xcode 27）。
-重装工具链：`bash scripts/setup-toolchain.sh`。
+详细进度、目录职责、验收状态和后续安排见[项目状态](docs/PROJECT-STATUS.md)。分步实施计划见 [docs/PLAN.md](docs/PLAN.md)，计划里标 **【你】** 的步骤需要实机验证。
 
-**阶段 B（服务端搬入）✅**：`MAL` 后端已搬进 `server/`；`anime` 表补上同步字段
-（`uid` / `updated_at` / `deleted_at` / `server_rev`）并新增 `rev` 计数器表与 `meta` 表；
-一次性迁移（补 uid + 海报改名 `<uid>.<ext>`）已在数据副本上跑通并核对：
-仍是 127 条、133 张海报，浏览器旧页面增删改查排序正常。
+本地启动 Go 服务端：
 
-服务端跑起来：
-
-```bash
+```sh
 cd server
-go run .                                  # 浏览器打开 http://localhost:2233
-go run . -data <数据目录> -port 2333       # 对着数据副本验证，不碰线上数据
+go run .                                  # http://localhost:2233
+go run . -data <数据目录> -port 2333       # 对数据副本运行
 ```
-
-**阶段 C（同步接口）**：C1–C4 已完成并通过 `go build`；C5 的 curl 实机验证已交给用户，结果待确认。
-
-**阶段 D（前端搬入）✅**：D1–D3 已完成并通过编译检查；D4 浏览器实机验证已由用户确认。
-
-**阶段 E（桌面 App）**：macOS 已启动并由用户确认；本地 SQLite、海报和排序交互已接入。E7 功能验收待集中完成；Windows 构建脚本已备，安装包及 E9 验收待完成。
-
-**阶段 F（iOS）**：iOS 模拟器已启动，原有 127 条记录和 133 张海报已导入模拟器 App；F2 真机侧载与验收待完成。

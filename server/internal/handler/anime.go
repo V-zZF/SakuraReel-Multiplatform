@@ -85,7 +85,7 @@ func GetAnime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if anime == nil {
-		fail(w, http.StatusNotFound, "番剧不存在")
+		fail(w, http.StatusNotFound, "影视剧不存在")
 		return
 	}
 	ok(w, anime)
@@ -202,7 +202,7 @@ func UpdateAnime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if existing == nil {
-		fail(w, http.StatusNotFound, "番剧不存在")
+		fail(w, http.StatusNotFound, "影视剧不存在")
 		return
 	}
 
@@ -330,7 +330,7 @@ func DeleteAnime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if anime == nil {
-		fail(w, http.StatusNotFound, "番剧不存在")
+		fail(w, http.StatusNotFound, "影视剧不存在")
 		return
 	}
 

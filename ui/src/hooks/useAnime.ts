@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { Anime, AnimeInput } from '../types';
 import { data } from '../data';
 
@@ -7,18 +7,24 @@ export function useAnime() {
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
+  const requestId = useRef(0);
 
   // 获取番剧列表（不传 category 则获取全部）
   const fetchList = useCallback(async (category?: string) => {
+    const id = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
       const list = await data.list(category);
+      if (id !== requestId.current) return;
       setAnimeList(list);
+      setLoadedCategory(category ?? null);
     } catch (e) {
+      if (id !== requestId.current) return;
       setError(e instanceof Error ? e.message : '获取列表失败');
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, []);
 
@@ -54,7 +60,7 @@ export function useAnime() {
   }, []);
 
   return {
-    animeList, setAnimeList, loading, error,
+    animeList, setAnimeList, loading, error, loadedCategory,
     fetchList, create, update, remove, reorder, uploadPoster,
   };
 }

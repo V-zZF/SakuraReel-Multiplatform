@@ -26,7 +26,7 @@ export default function EmptyState({ category, onAdd }: EmptyStateProps) {
       >
         {emoji}
       </motion.span>
-      <p className="text-apple-gray text-lg mb-1">还没有{cat?.label}的番剧</p>
+      <p className="text-apple-gray text-lg mb-1">还没有{cat?.label}的影视剧</p>
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -34,7 +34,7 @@ export default function EmptyState({ category, onAdd }: EmptyStateProps) {
         className="mt-3 px-5 py-2 bg-primary-100 text-primary-700 rounded-full
                    text-sm font-medium hover:bg-primary-200 transition-colors"
       >
-        + 添加番剧
+        + 添加影视剧
       </motion.button>
     </motion.div>
   );

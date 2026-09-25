@@ -13,6 +13,9 @@ import LeaderBoard from './components/LeaderBoard';
 import Toast, { type ToastMessage } from './components/Toast';
 import AnimeCard from './components/AnimeCard';
 import useDragSensor from './hooks/useDragSensor';
+import TimeMachine from './components/TimeMachine';
+
+const CATEGORY_ORDER = ['watched', 'watching', 'wantwatch'];
 
 // 页面过渡动画
 const pageTransition = {
@@ -31,16 +34,44 @@ const pageTransitionBack = {
 
 export default function App() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showTimeMachine, setShowTimeMachine] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAnime, setEditingAnime] = useState<Anime | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('watched');
+  const [categoryDirection, setCategoryDirection] = useState(1);
+  const changeCategory = useCallback((next: string) => {
+    if (next === activeCategory) return;
+    setCategoryDirection(CATEGORY_ORDER.indexOf(next) > CATEGORY_ORDER.indexOf(activeCategory) ? 1 : -1);
+    setActiveCategory(next);
+  }, [activeCategory]);
   const [activeDragId, setActiveDragId] = useState<number | null>(null);
   const toastIdRef = useRef(0);
+  const backState = useRef({ modalOpen, showLeaderboard, isEditing });
+  backState.current = { modalOpen, showLeaderboard, isEditing };
+
+  useEffect(() => {
+    const androidWindow = window as Window & { __sakurareelAndroidBack?: () => boolean };
+    androidWindow.__sakurareelAndroidBack = () => {
+      const state = backState.current;
+      if (state.modalOpen) {
+        setModalOpen(false);
+        setEditingAnime(null);
+      } else if (state.isEditing) {
+        setIsEditing(false);
+      } else if (state.showLeaderboard) {
+        setShowLeaderboard(false);
+      } else {
+        return false;
+      }
+      return true;
+    };
+    return () => { delete androidWindow.__sakurareelAndroidBack; };
+  }, []);
 
   const {
-    animeList, setAnimeList, loading, error, fetchList,
+    animeList, setAnimeList, loading, error, loadedCategory, fetchList,
     create, update, remove, reorder, uploadPoster,
   } = useAnime();
 
@@ -57,7 +88,7 @@ export default function App() {
     setIsEditing((v) => !v);
   }, []);
 
-  // 获取番剧列表（按分类筛选）
+  // 获取影视剧列表（按分类筛选）
   useEffect(() => {
     fetchList(activeCategory);
   }, [fetchList, activeCategory]);
@@ -109,7 +140,7 @@ export default function App() {
     setActiveDragId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) {
-      if (!over) showToast('同月份的番剧才能排序', 'error');
+      if (!over) showToast('同月份的影视剧才能排序', 'error');
       return;
     }
 
@@ -118,7 +149,7 @@ export default function App() {
     const overItem = sortedList.find((a) => a.id === over.id);
     if (!activeItem || !overItem) return;
     if (activeItem.watch_date !== overItem.watch_date) {
-      showToast('同月份的番剧才能排序', 'error');
+      showToast('同月份的影视剧才能排序', 'error');
       return;
     }
 
@@ -168,10 +199,10 @@ export default function App() {
     try {
       if (editingAnime) {
         await update(editingAnime.id, input);
-        showToast('番剧已更新', 'success');
+        showToast('影视剧已更新', 'success');
       } else {
         await create(input);
-        showToast('番剧已添加', 'success');
+        showToast('影视剧已添加', 'success');
       }
     } catch (e) {
       showToast(e instanceof Error ? e.message : '操作失败', 'error');
@@ -183,7 +214,7 @@ export default function App() {
   const handleDelete = useCallback(async (id: number) => {
     try {
       await remove(id);
-      showToast('番剧已删除', 'success');
+      showToast('影视剧已删除', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : '删除失败', 'error');
       throw e;
@@ -200,24 +231,28 @@ export default function App() {
     }
   }, [uploadPoster, showToast]);
 
-  // 找到拖拽中的番剧（用于 DragOverlay）
+  // 找到拖拽中的影视剧（用于 DragOverlay）
+  const categoryLoading = loading || (loadedCategory !== activeCategory && !error);
+
   const draggingAnime = activeDragId
     ? sortedList.find((a) => a.id === activeDragId) ?? null
     : null;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
+      <div inert={showTimeMachine}>
       {/* Toast 通知 */}
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
       {/* 导航栏 */}
       <NavBar
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={changeCategory}
         showLeaderboard={showLeaderboard}
         onToggleLeaderboard={handleToggleLeaderboard}
         isEditing={isEditing}
         onToggleEditing={handleToggleEditing}
+        onOpenTimeMachine={() => setShowTimeMachine(true)}
       />
 
       {/* 内容区 */}
@@ -235,7 +270,21 @@ export default function App() {
             key="home"
             {...pageTransitionBack}
           >
-            <main className="max-w-[1600px] mx-auto px-4 md:px-3 py-6">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-3 py-6 overflow-x-hidden">
+              <AnimatePresence mode="wait" custom={categoryDirection} initial={false}>
+                <motion.div
+                  key={activeCategory}
+                  custom={categoryDirection}
+                  variants={{
+                    enter: (direction: number) => ({ x: direction * 64, opacity: 0 }),
+                    center: { x: 0, opacity: 1 },
+                    exit: (direction: number) => ({ x: -direction * 64, opacity: 0 }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.26, ease: 'easeInOut' }}
+                >
               {/* 编辑模式提示条 */}
               <AnimatePresence>
                 {isEditing && (
@@ -254,7 +303,7 @@ export default function App() {
 
               {/* 加载状态 */}
               <AnimatePresence mode="wait">
-                {loading && (
+                {categoryLoading && (
                   <motion.div
                     key="loading"
                     initial={{ opacity: 0 }}
@@ -268,7 +317,7 @@ export default function App() {
               </AnimatePresence>
 
               {/* 错误提示 */}
-              {error && !loading && (
+              {error && !categoryLoading && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -285,17 +334,22 @@ export default function App() {
               )}
 
               {/* 卡片列表 / 空状态 */}
-              {!loading && !error && (
-                sortedList.length === 0 ? (
+              {!categoryLoading && !error && (
+                <motion.div
+                  initial={{ x: categoryDirection * 64, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.26, ease: 'easeInOut' }}
+                >
+                {sortedList.length === 0 ? (
                   <div className="text-center py-16">
                     <span className="text-5xl">📋</span>
-                    <p className="mt-3 text-sm text-apple-gray">还没有添加任何番剧</p>
+                    <p className="mt-3 text-sm text-apple-gray">还没有添加任何影视剧</p>
                     <button
                       onClick={openAdd}
                       className="mt-4 px-5 py-2 rounded-full bg-primary-600 text-white text-sm font-medium
                                  hover:bg-primary-700 transition-colors"
                     >
-                      添加第一部番剧
+                      添加第一部影视剧
                     </button>
                   </div>
                 ) : (
@@ -311,9 +365,7 @@ export default function App() {
                       strategy={rectSortingStrategy}
                       disabled={!isEditing}
                     >
-                      <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))]
-                                    md:grid-cols-6
-                                    gap-4">
+                      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,160px),190px))] lg:grid-cols-[repeat(5,minmax(0,240px))] justify-center gap-4">
                         {sortedList.map((anime) => (
                           <SortableCard
                             key={anime.id}
@@ -333,14 +385,17 @@ export default function App() {
                       }}
                     >
                       {draggingAnime ? (
-                        <div className="scale-105 shadow-card-hover rounded-card overflow-hidden">
+                        <div className="h-full scale-105 shadow-card-hover rounded-card overflow-hidden">
                           <AnimeCard anime={draggingAnime} onClick={() => {}} />
                         </div>
                       ) : null}
                     </DragOverlay>
                   </DndContext>
-                )
+                )}
+                </motion.div>
               )}
+                </motion.div>
+              </AnimatePresence>
             </main>
 
             {/* 页脚署名 */}
@@ -363,7 +418,7 @@ export default function App() {
           className="fixed bottom-[calc(1.5rem+var(--safe-bottom))] right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700
                      text-white rounded-full shadow-lg flex items-center justify-center
                      text-2xl transition-colors duration-200 z-40"
-          title="添加番剧"
+          title="添加影视剧"
         >
           +
         </motion.button>
@@ -378,6 +433,10 @@ export default function App() {
         onDelete={handleDelete}
         onUpload={handleUpload}
       />
+      </div>
+      <AnimatePresence>
+        {showTimeMachine && <TimeMachine onClose={() => setShowTimeMachine(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

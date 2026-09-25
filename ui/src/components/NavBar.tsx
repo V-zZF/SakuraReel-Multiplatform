@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 const CATEGORY_TABS = [
   { key: 'watched', label: '看过' },
@@ -13,13 +14,25 @@ interface NavBarProps {
   onToggleLeaderboard: () => void;
   isEditing: boolean;
   onToggleEditing: () => void;
+  onOpenTimeMachine: () => void;
 }
 
 export default function NavBar({
   activeCategory, onCategoryChange,
   showLeaderboard, onToggleLeaderboard,
-  isEditing, onToggleEditing,
+  isEditing, onToggleEditing, onOpenTimeMachine,
 }: NavBarProps) {
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const origin = useRef<{ x: number; y: number } | null>(null);
+  const [holding, setHolding] = useState(false);
+  const reducedMotion = !!useReducedMotion();
+  const clearHold = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    origin.current = null;
+    setHolding(false);
+  };
+  useEffect(() => () => { if (holdTimer.current) clearTimeout(holdTimer.current); }, []);
   return (
     <motion.nav
       initial={{ y: -48, opacity: 0 }}
@@ -90,8 +103,32 @@ export default function NavBar({
               </motion.button>
             )}
 
-            <h1 className="text-xl font-bold text-primary-600 text-center select-none">
-              🌸 我的番剧收藏
+            <h1 className="brand-title text-primary-600 text-center select-none">
+              <button
+                type="button"
+                disabled={isEditing}
+                aria-label="SakuraReel，进入时光机"
+                aria-description="长按半秒进入时光机"
+                onPointerDown={(event) => {
+                  if (isEditing) return;
+                  origin.current = { x: event.clientX, y: event.clientY };
+                  setHolding(true);
+                  holdTimer.current = setTimeout(() => {
+                    clearHold();
+                    onOpenTimeMachine();
+                  }, 500);
+                }}
+                onPointerMove={(event) => {
+                  if (origin.current && Math.hypot(event.clientX - origin.current.x, event.clientY - origin.current.y) > 12) clearHold();
+                }}
+                onPointerUp={clearHold}
+                onPointerCancel={clearHold}
+                onPointerLeave={clearHold}
+                onContextMenu={(event) => event.preventDefault()}
+                onClick={(event) => { if (event.detail === 0 && !isEditing) onOpenTimeMachine(); }}
+                className="disabled:cursor-default touch-manipulation"
+                style={{ transform: holding && !reducedMotion ? 'scale(1.07)' : 'scale(1)', transition: reducedMotion ? 'none' : 'transform 180ms ease-out' }}
+              >SakuraReel</button>
             </h1>
 
             {/* 分类标签（编辑模式下隐藏） */}

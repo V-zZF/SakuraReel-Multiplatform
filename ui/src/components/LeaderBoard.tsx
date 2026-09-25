@@ -168,7 +168,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
   // 拖拽传感器
   const sensors = useDragSensor();
 
-  // 加载全部番剧（独立 fetch）
+  // 加载全部影视剧（独立 fetch）
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -221,7 +221,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
     setActiveDragId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) {
-      if (!over && active.id) onToast?.('同分数的番剧才能排序', 'error');
+      if (!over && active.id) onToast?.('同分数的影视剧才能排序', 'error');
       return;
     }
 
@@ -234,7 +234,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
     const activeItem = list[oldIdx];
     const overItem = list[newIdx];
     if (activeItem.rating !== overItem.rating) {
-      onToast?.('同分数的番剧才能排序', 'error');
+      onToast?.('同分数的影视剧才能排序', 'error');
       return;
     }
 
@@ -266,7 +266,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
     setActiveDragId(null);
   }, []);
 
-  // 拖拽中的番剧（用于 DragOverlay）
+  // 拖拽中的影视剧（用于 DragOverlay）
   const draggingAnime = activeDragId
     ? sortedList.find((a) => a.id === activeDragId) ?? null
     : null;
@@ -301,7 +301,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
       {!loading && !error && animeList.length === 0 && (
         <div className="text-center py-16">
           <span className="text-5xl">📋</span>
-          <p className="mt-3 text-sm text-apple-gray">还没有添加任何番剧</p>
+          <p className="mt-3 text-sm text-apple-gray">还没有添加任何影视剧</p>
         </div>
       )}
 

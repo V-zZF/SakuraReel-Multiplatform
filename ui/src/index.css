@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.brand-title {
+  font-family: "Arial Rounded MT Bold", "Hiragino Maru Gothic ProN", "sans-serif-rounded", ui-rounded, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 1.75rem;
+}
+
 /* 基础样式 */
 body {
   margin: 0;

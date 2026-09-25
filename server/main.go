@@ -106,7 +106,7 @@ func main() {
 	mux.Handle("/", spaHandler(distFS))
 
 	// 启动服务
-	fmt.Printf("🚀 番剧收藏库服务启动: http://localhost:%d  (v%s)\n", *port, appVersion)
+	fmt.Printf("🚀 影视剧收藏库服务启动: http://localhost:%d  (v%s)\n", *port, appVersion)
 	fmt.Printf("📱 局域网访问: http://<你的电脑IP>:%d\n", *port)
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("按 Ctrl+C 停止服务")

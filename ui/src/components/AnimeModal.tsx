@@ -4,6 +4,7 @@ import type { Anime, AnimeInput } from '../types';
 import { CATEGORIES } from '../types';
 import { posterUrl } from '../data';
 import { getRatingColor } from './RatingCircle';
+import FieldIcon from './FieldIcon';
 
 interface AnimeModalProps {
   isOpen: boolean;
@@ -172,7 +173,7 @@ export default function AnimeModal({
             {/* 标题栏 */}
             <div className="flex items-center justify-between px-6 pt-5 pb-3">
               <h2 className="text-lg font-semibold text-gray-800">
-                {isEdit ? '编辑番剧' : '添加番剧'}
+                {isEdit ? '编辑影视剧' : '添加影视剧'}
               </h2>
               <button
                 onClick={onClose}
@@ -213,7 +214,7 @@ export default function AnimeModal({
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-apple-gray">
-                      <span className="text-3xl">📷</span>
+                      <FieldIcon name="poster" className="w-9 h-9" />
                       <span className="text-sm">点击上传海报</span>
                       <span className="text-xs">jpg / png / webp</span>
                     </div>
@@ -237,14 +238,14 @@ export default function AnimeModal({
 
               {/* 片名 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  片名
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="title" />片名
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="输入番剧名称"
+                  placeholder="输入影视剧名称"
                   maxLength={200}
                   className="w-full px-4 py-2.5 rounded-input bg-primary-50/50
                              text-sm text-gray-800 placeholder:text-[#C7C7CC]
@@ -256,8 +257,8 @@ export default function AnimeModal({
 
               {/* 分类选择 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  分类
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="category" />分类
                 </label>
                 <div className="flex bg-gray-100 rounded-input p-0.5">
                   {CATEGORIES.map((cat) => (
@@ -279,8 +280,8 @@ export default function AnimeModal({
 
               {/* 观看年月 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  观看年月
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="date" />观看年月
                 </label>
                 <input
                   type="month"
@@ -295,8 +296,8 @@ export default function AnimeModal({
 
               {/* 评分 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  评分
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="rating" />评分
                 </label>
                 <div className="flex rounded-input overflow-hidden bg-gray-100">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -327,8 +328,8 @@ export default function AnimeModal({
 
               {/* 短评 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  短评
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="note" />短评
                 </label>
                 <textarea
                   value={note}
@@ -348,8 +349,8 @@ export default function AnimeModal({
 
               {/* 播放链接 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  播放链接
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                  <FieldIcon name="link" />播放链接
                 </label>
                 <input
                   type="url"

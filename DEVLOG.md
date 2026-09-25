@@ -1,5 +1,13 @@
 # 开发日志
 
+## 2026-09-25 — G 阶段时光机、品牌图标与 v0.6.1 安装包
+
+- 完成 G 阶段共用时光机界面：按观看年月整理季度与作品，增加舞台、季度浏览、Cover Flow、短评翻面、键盘/读屏支持和减少动态效果适配；首页标题长按进入时光机。代码侧 `npm run build` 通过，Mac 与移动端实机验收仍待进行。
+- 调整收藏卡片、排序动画和表单视觉；更新产品用语为“影视剧”，浏览器标题改为 SakuraReel。
+- 将用户提供的 `SakuraReel-Complete-Icon-1024.svg` 合成为 Tauri 多尺寸图标，接入 macOS、iOS、Android 资源；配置 macOS bundle 图标。导航栏品牌标题改用圆润字体栈。DMG 内 `icon.icns` 与源图标校验一致。
+- 项目版本统一为 **0.6.1**；Android `versionCode=6001`。构建 ARM64 Android Release APK 并用既有发布密钥签名，`apksigner verify` 通过；构建 Apple Silicon macOS DMG，`hdiutil verify` 通过。APK / DMG 位于本地 `dist/`，不纳入源码提交。
+- 将 Tauri 生成的 Android Gradle 工程、平台资源与 iOS 版本号更新纳入仓库；同步 README、项目状态和交接文档。
+
 ## 2026-09-23 — macOS / iOS 拖拽与悬浮手感修整
 
 - 首页网格改用 `rectSortingStrategy`；首页和排行榜的 dnd-kit 位移放在外层 DOM，Framer Motion 入场和悬浮动画放在内层，避免两个动画系统同时写 `transform`。

@@ -173,7 +173,7 @@ fn get(conn: &Connection, id: i64) -> Result<Anime, String> {
     )
     .optional()
     .map_err(|e| e.to_string())?
-    .ok_or_else(|| "番剧不存在".into())
+    .ok_or_else(|| "影视剧不存在".into())
 }
 
 fn max_position(
@@ -402,7 +402,7 @@ pub fn reorder_anime(
             .map_err(|e| e.to_string())?
             != 1
         {
-            return Err(format!("番剧 {} 不存在", item.id));
+            return Err(format!("影视剧 {} 不存在", item.id));
         }
     }
     tx.commit().map_err(|e| e.to_string())

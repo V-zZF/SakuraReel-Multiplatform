@@ -33,9 +33,7 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
 
   return (
     <div
-      className="bg-white rounded-card overflow-hidden shadow-card hover:shadow-card-hover
-                 transition-[box-shadow] duration-300 ease-out
-                 cursor-pointer group"
+      className="h-full flex flex-col bg-white rounded-card overflow-hidden shadow-card cursor-pointer"
       onClick={(e) => {
         // 拖拽中不触发点击
         if (isDragging) {
@@ -46,12 +44,12 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
       }}
     >
       {/* 海报区 */}
-      <div className="aspect-[2/3] bg-primary-100 relative overflow-hidden">
+      <div className="flex-1 min-h-0 bg-primary-100 relative overflow-hidden">
         {anime.poster ? (
           <img
             src={posterUrl(anime.poster)}
             alt={anime.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         ) : (
@@ -65,9 +63,8 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
       </div>
 
       {/* 信息区 */}
-      <div className="p-4 md:p-6">
-        <h3 className="font-semibold text-[13px] md:text-[15px] text-gray-900 line-clamp-2 leading-snug mb-1
-                       min-h-[2.25rem] md:min-h-[2.75rem]">
+      <div className="h-[124px] shrink-0 px-3 py-2.5">
+        <h3 className="font-semibold text-[16px] md:text-[17px] text-gray-900 line-clamp-2 leading-snug mb-0.5 h-[48px]">
           {anime.title}
         </h3>
         <div className="flex items-end gap-3">
@@ -81,11 +78,11 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
                     setShowNote(!showNote);
                   }
                 }}
-                className={`text-lg md:text-2xl font-bold tabular-nums ${anime.note ? 'cursor-pointer hover:opacity-80' : ''}`}
+                className={`text-[28px] md:text-[30px] leading-none font-extrabold tracking-tight tabular-nums ${anime.note ? 'cursor-pointer hover:opacity-80' : ''}`}
                 style={{ color: anime.rating > 0 ? getRatingColor(anime.rating) : '#C7C7CC' }}
                 title={anime.note ? '点击查看短评' : undefined}
               >
-                {anime.rating > 0 ? <>{anime.rating}<span className="text-xs md:text-sm font-medium ml-0.5">分</span></> : '--'}
+                {anime.rating > 0 ? <>{anime.rating}<span className="text-xs md:text-sm font-semibold ml-0.5">分</span></> : '--'}
               </span>
 
               {/* 短评气泡 */}
@@ -113,7 +110,7 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
               </AnimatePresence>
             </div>
             {anime.watch_date && (
-              <div className="mt-1.5 text-[11px] md:text-[13px] text-[#C7C7CC]">
+              <div className="mt-1 text-[10px] md:text-[11px] text-[#C7C7CC]">
                 📅 {anime.watch_date}
               </div>
             )}
@@ -126,11 +123,11 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full
+              className="flex-shrink-0 w-8 h-8 rounded-full
                          bg-primary-600 hover:bg-primary-700
-                         shadow-lg hover:shadow-xl
+                         shadow-sm
                          flex items-center justify-center
-                         transition-all duration-200 hover:scale-110"
+                         transition-colors duration-200"
               title="播放"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white" className="md:w-[18px] md:h-[18px]">
