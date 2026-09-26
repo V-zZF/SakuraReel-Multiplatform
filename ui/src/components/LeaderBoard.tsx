@@ -9,6 +9,7 @@ import { data, posterUrl } from '../data';
 import useDragSensor from '../hooks/useDragSensor';
 import { getRatingColor } from './RatingCircle';
 import Spinner from './Spinner';
+import useCardTilt from '../hooks/useCardTilt';
 
 // ── SortableLeaderItem（内部组件，每个排行榜条目） ──
 
@@ -20,6 +21,7 @@ interface SortableLeaderItemProps {
 }
 
 function SortableLeaderItem({ anime, index, onEdit, disabled }: SortableLeaderItemProps) {
+  const tilt = useCardTilt(disabled, 1.35);
   const {
     attributes,
     listeners,
@@ -57,13 +59,15 @@ function SortableLeaderItem({ anime, index, onEdit, disabled }: SortableLeaderIt
         variants={listItem}
         initial="hidden"
         animate="visible"
-        whileHover={disabled ? { y: -2, scale: 1.005 } : undefined}
-        whileTap={disabled ? { scale: 0.99 } : undefined}
+        whileTap={disabled && !tilt.reduced ? { scale: 0.99 } : undefined}
+        style={tilt.style}
+        onPointerMove={tilt.onPointerMove}
+        onPointerLeave={tilt.onPointerLeave}
         transition={{ type: 'spring', stiffness: 260, damping: 24, mass: 0.75 }}
         onClick={() => {
           if (disabled) onEdit(anime);
         }}
-        className={`bg-white rounded-card overflow-hidden shadow-leaderboard hover:shadow-leaderboard-hover
+        className={`bg-white rounded-card overflow-hidden shadow-leaderboard ${tilt.hovered ? 'shadow-[0_12px_30px_rgba(248,165,182,0.22)]' : ''}
                    flex items-stretch transition-[box-shadow] duration-300 ease-out relative
                    ${disabled ? 'cursor-pointer' : ''}`}
       >

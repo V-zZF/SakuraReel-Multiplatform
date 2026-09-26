@@ -15,7 +15,10 @@
 .tm-heading { position: absolute; left: 50%; transform: translateX(-50%); font-size: 13px; color: #ffffff8a; letter-spacing: .15em; pointer-events: none; }
 .tm-title { flex: none; text-align: center; font-size: clamp(25px, 3.6vw, 38px); font-weight: 750; letter-spacing: .025em; line-height: 1.25; margin-top: clamp(5px, 2vh, 22px); white-space: nowrap; }
 .tm-title small { font-size: .48em; color: #c7c7cc; }
-.tm-flow { flex: 1; min-height: 0; width: 100%; position: relative; touch-action: pan-y; overflow: hidden; perspective: 1100px; }
+.tm-flow-shell { flex: 1; min-height: 0; width: 100%; position: relative; overflow: hidden; }
+.tm-flow-layer { position: absolute; inset: 0; opacity: 1; transition: opacity 220ms ease; }
+.tm-flow-layer.tm-layer-hidden { opacity: 0; }
+.tm-flow { height: 100%; width: 100%; position: relative; touch-action: pan-y; overflow: hidden; perspective: 1100px; }
 .tm-card-wrap { position: absolute; transform-style: preserve-3d; will-change: transform; }
 .tm-card-label { position: absolute; bottom: calc(100% + 11px); left: 0; width: 100%; text-align: center; font-size: clamp(13px, 1.9vw, 21px); font-weight: 700; white-space: nowrap; text-shadow: 0 2px 8px #000a; }
 .tm-card { display: block; width: 100%; aspect-ratio: 1; padding: 0; border: 1px solid #ffffff30; border-radius: 18px; overflow: hidden; background: #303039; box-shadow: 0 17px 32px #0009; cursor: pointer; perspective: 1100px; }
@@ -32,14 +35,11 @@
 .tm-reflection { position: absolute; top: 100%; left: 0; width: 100%; height: 43%; overflow: hidden; opacity: .36; mask-image: linear-gradient(to bottom, #000 0%, transparent 96%); -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 96%); pointer-events: none; filter: blur(.6px); }
 .tm-reflection img, .tm-reflection .tm-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: auto; aspect-ratio: 1; transform: scaleY(-1); }
 .tm-reflection-note { width: 100%; aspect-ratio: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10%; box-sizing: border-box; background: linear-gradient(145deg, #363139, #1d1e24); color: #e8a6bd; font-size: 22px; transform: scaleY(-1); }
-.tm-detail { flex: none; height: clamp(112px, 17vh, 160px); text-align: center; padding: 4px 20px 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.tm-detail { flex: none; height: clamp(112px, 17vh, 160px); text-align: center; padding: 0 20px clamp(28px, 5vh, 56px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .tm-detail p { font-size: clamp(16px, 2.1vw, 25px); color: #dddde2; margin: 0 0 5px; }
 .tm-detail strong { font-size: clamp(24px, 3.1vw, 37px); line-height: 1.2; }
 .tm-detail h2 { max-width: 90vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(17px, 2.4vw, 27px); margin: 0 0 3px; }
 .tm-detail h2 + p { font-size: clamp(14px, 1.8vw, 18px); }
-.tm-controls { flex: none; height: 38px; display: flex; gap: 18px; justify-content: center; }
-.tm-controls button { width: 40px; height: 32px; color: #eee; font-size: 28px; line-height: 24px; border-radius: 8px; background: #ffffff16; }
-.tm-controls button:disabled { opacity: .25; }
 .tm-message { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; text-align: center; padding: 20px; }
 .tm-message button { color: #f5c5d2; text-decoration: underline; }
 .tm-screen button:focus-visible { outline: 3px solid #f5c5d2; outline-offset: 3px; }
@@ -47,8 +47,9 @@
   .tm-header { height: 48px; }
   .tm-title { margin-top: 4px; }
   .tm-card { border-radius: 12px; }
-  .tm-detail { height: 115px; }
+  .tm-detail { height: 115px; padding-bottom: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .tm-card-wrap { transition: none !important; }
+  .tm-flow-layer { transition: none; }
 }

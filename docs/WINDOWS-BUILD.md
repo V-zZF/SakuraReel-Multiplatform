@@ -1,6 +1,6 @@
 # SakuraReel Windows 构建指南
 
-供 Windows 构建者或 Windows 上的 coding agent 使用。目标是从当前仓库生成 x64 NSIS 安装程序（`.exe`）。本指南适用于仓库 `v0.6.1` 的 Tauri v2 工程。
+供 Windows 构建者或 Windows 上的 coding agent 使用。目标是从当前仓库生成 x64 NSIS 安装程序（`.exe`）。本指南适用于仓库 `v0.6.2` 的 Tauri v2 工程。
 
 ## 1. 准备构建环境
 
@@ -78,7 +78,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 src-tauri\target\release\bundle\nsis\
 ```
 
-脚本结束时也会打印该目录。文件名会包含产品名、版本和架构，当前产品版本是 `0.6.1`。把实际生成的 `.exe` 文件名、大小和构建日志末尾一并回报给 SakuraReel 维护者。
+脚本结束时也会打印该目录。文件名会包含产品名、版本和架构，当前源码版本是 `0.6.2`。把实际生成的 `.exe` 文件名、大小和构建日志末尾一并回报给 SakuraReel 维护者。
 
 ## 5. 交给 Windows agent 的任务说明
 

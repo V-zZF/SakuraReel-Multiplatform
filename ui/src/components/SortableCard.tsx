@@ -2,6 +2,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import AnimeCard from './AnimeCard';
 import type { Anime } from '../types';
+import { motion } from 'framer-motion';
+import useCardTilt from '../hooks/useCardTilt';
 
 interface SortableCardProps {
   anime: Anime;
@@ -10,6 +12,7 @@ interface SortableCardProps {
 }
 
 export default function SortableCard({ anime, onClick, disabled = false }: SortableCardProps) {
+  const tilt = useCardTilt(disabled, 1);
   const {
     attributes,
     listeners,
@@ -28,7 +31,8 @@ export default function SortableCard({ anime, onClick, disabled = false }: Sorta
 
   return (
     <div ref={setNodeRef} style={style} className="relative aspect-[0.5] min-w-0">
-      <div className="h-full">
+      <motion.div className={`h-full rounded-card transition-shadow duration-200 ${tilt.hovered ? 'shadow-card-hover' : ''}`}
+        style={tilt.style} onPointerMove={tilt.onPointerMove} onPointerLeave={tilt.onPointerLeave}>
         {/* 拖拽手柄（编辑模式下显示，仅此处可拖拽） */}
         {!disabled && (
           <div
@@ -49,7 +53,7 @@ export default function SortableCard({ anime, onClick, disabled = false }: Sorta
           onClick={onClick}
           isDragging={isDragging}
         />
-      </div>
+      </motion.div>
     </div>
   );
 }

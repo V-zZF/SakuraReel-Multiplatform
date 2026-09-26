@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Anime } from '../types';
 import { posterUrl } from '../data';
 import { getRatingColor } from './RatingCircle';
+import { isTauri } from '@tauri-apps/api/core';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 interface AnimeCardProps {
   anime: Anime;
@@ -13,6 +15,7 @@ interface AnimeCardProps {
 
 export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps) {
   const [showNote, setShowNote] = useState(false);
+  const [linkError, setLinkError] = useState(false);
   const noteRef = useRef<HTMLDivElement>(null);
 
   // 点击外部关闭短评气泡
@@ -118,11 +121,18 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
 
           {/* 播放按钮 — 底部与日期下端对齐 */}
           {anime.play_link && (
+            <div className="flex-shrink-0 flex flex-col items-center gap-1">
             <a
               href={anime.play_link}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isTauri()) return;
+                e.preventDefault();
+                setLinkError(false);
+                void openUrl(anime.play_link).catch(() => setLinkError(true));
+              }}
               className="flex-shrink-0 w-8 h-8 rounded-full
                          bg-primary-600 hover:bg-primary-700
                          shadow-sm
@@ -134,6 +144,8 @@ export default function AnimeCard({ anime, onClick, isDragging }: AnimeCardProps
                 <path d="M8 5v14l11-7z" />
               </svg>
             </a>
+            {linkError && <span role="alert" className="text-[10px] text-apple-red whitespace-nowrap">打开失败</span>}
+            </div>
           )}
         </div>
       </div>

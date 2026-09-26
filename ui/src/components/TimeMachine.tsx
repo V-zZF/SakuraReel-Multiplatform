@@ -56,7 +56,7 @@ function arrangeAroundWinner(items: Anime[]) {
   return { items: [...left, items[0], ...right], center: left.length };
 }
 
-function CoverFlow({ items, selected, onSelect, onOpen, flippable, flipped, reduced }: {
+function CoverFlow({ items, selected, onSelect, onOpen, flippable, flipped, reduced, expanded = true }: {
   items: FlowItem[];
   selected: number;
   onSelect: (index: number) => void;
@@ -64,6 +64,7 @@ function CoverFlow({ items, selected, onSelect, onOpen, flippable, flipped, redu
   flippable?: boolean;
   flipped?: boolean;
   reduced: boolean;
+  expanded?: boolean;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<{ x: number; offset: number; moved: boolean } | null>(null);
@@ -126,7 +127,8 @@ function CoverFlow({ items, selected, onSelect, onOpen, flippable, flipped, redu
       {items.map((item, index) => {
         const canFlip = !!flippable && index === selected && !!item.anime.note.trim();
         const distance = index - selected + offset / stride;
-        if (Math.abs(distance) > 3.7) return null;
+        if (Math.abs(distance) > 3.7 && expanded) return null;
+        const visualDistance = expanded ? distance : 0;
         const side = Math.sign(distance);
         const depth = Math.abs(distance);
         const scale = 1.06 - Math.min(depth, 1) * 0.23 - Math.min(Math.max(depth - 1, 0), 2) * 0.07;
@@ -135,8 +137,9 @@ function CoverFlow({ items, selected, onSelect, onOpen, flippable, flipped, redu
           <div key={item.key} className="tm-card-wrap"
             style={{ width: cardSize, left: '50%', top: '42%', zIndex: 100 - Math.round(depth * 10),
               filter: `brightness(${1 - Math.min(depth, 3) * 0.055})`,
-              transform: `translate(-50%, -50%) translateX(${distance * stride}px) perspective(1100px) rotateY(${rotate}deg) scale(${scale})`,
-              transition: gesture.current || reduced ? 'none' : 'transform 360ms cubic-bezier(.2,.8,.2,1)' }}>
+              opacity: expanded || index === selected ? 1 : 0,
+              transform: `translate(-50%, -50%) translateX(${visualDistance * stride}px) perspective(1100px) rotateY(${expanded ? rotate : 0}deg) scale(${expanded ? scale : 1.06})`,
+              transition: gesture.current || reduced ? 'none' : `transform 480ms cubic-bezier(.2,.8,.2,1) ${Math.min(Math.abs(index - selected), 3) * 35}ms, opacity 220ms ease ${expanded ? 70 : 0}ms` }}>
             {item.label && <div className="tm-card-label" style={{ color: item.accent, opacity: Math.abs(distance) < 0.3 ? 0 : 1 }}>{item.label}</div>}
             <button type="button" className={`tm-card${index === selected ? ' tm-card-current' : ''}`} aria-label={item.accessible}
               aria-current={index === selected ? 'true' : undefined}
@@ -176,11 +179,46 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
   const [workIndex, setWorkIndex] = useState(0);
   const [workFlipped, setWorkFlipped] = useState(false);
   const [showWorks, setShowWorks] = useState(false);
+  const [workLayerMounted, setWorkLayerMounted] = useState(false);
+  const [workExpanded, setWorkExpanded] = useState(false);
+  const revealFrame = useRef<number | null>(null);
+  const returnTimer = useRef<number | null>(null);
   const reduced = !!useReducedMotion();
   const quarters = useMemo(() => makeQuarters(records), [records]);
   const currentIndex = quarterIndex ?? initialQuarter(quarters);
   const quarter = quarters[currentIndex];
   const workArrangement = useMemo(() => arrangeAroundWinner(quarter?.items ?? []), [quarter]);
+
+  useEffect(() => () => { if (returnTimer.current !== null) window.clearTimeout(returnTimer.current); }, []);
+
+  const returnToQuarter = useCallback(() => {
+    if (returnTimer.current !== null) return;
+    setWorkFlipped(false);
+    if (!reduced && workIndex !== workArrangement.center) {
+      setWorkIndex(workArrangement.center);
+      returnTimer.current = window.setTimeout(() => {
+        returnTimer.current = null;
+        setShowWorks(false);
+      }, 380);
+    } else {
+      setShowWorks(false);
+    }
+  }, [reduced, workIndex, workArrangement.center]);
+
+  useEffect(() => {
+    if (showWorks) {
+      if (reduced) { setWorkExpanded(true); return; }
+      revealFrame.current = requestAnimationFrame(() => {
+        revealFrame.current = requestAnimationFrame(() => setWorkExpanded(true));
+      });
+      return () => { if (revealFrame.current !== null) cancelAnimationFrame(revealFrame.current); };
+    }
+    setWorkExpanded(false);
+    if (!workLayerMounted) return;
+    if (reduced) { setWorkLayerMounted(false); return; }
+    const timer = window.setTimeout(() => setWorkLayerMounted(false), 650);
+    return () => window.clearTimeout(timer);
+  }, [showWorks, workLayerMounted, reduced]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -198,14 +236,14 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
   }, []);
 
   useEffect(() => {
-    const closeOrBack = () => { if (showWorks) setShowWorks(false); else onClose(); };
+    const closeOrBack = () => { if (showWorks) returnToQuarter(); else onClose(); };
     const key = (event: KeyboardEvent) => { if (event.key === 'Escape') closeOrBack(); };
     const androidWindow = window as Window & { __sakurareelAndroidBack?: () => boolean };
     const previous = androidWindow.__sakurareelAndroidBack;
     androidWindow.__sakurareelAndroidBack = () => { closeOrBack(); return true; };
     window.addEventListener('keydown', key);
     return () => { androidWindow.__sakurareelAndroidBack = previous; window.removeEventListener('keydown', key); };
-  }, [showWorks, onClose]);
+  }, [showWorks, onClose, returnToQuarter]);
 
   const quarterItems: FlowItem[] = quarters.map((q) => ({
     key: q.key, anime: q.items[0], label: `${q.year} 年 ${seasons[q.season].name}`,
@@ -224,7 +262,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
       exit={reduced ? { opacity: 0, transition: { duration: 0.1 } } : { y: '-100%', transition: { duration: 0.38, ease: [0.64, 0, 0.78, 0] } }}>
       <div className="tm-content">
       <header className="tm-header">
-        <button ref={backButtonRef} type="button" className="tm-back" onClick={() => showWorks ? setShowWorks(false) : onClose()}>
+        <button ref={backButtonRef} type="button" className="tm-back" onClick={() => showWorks ? returnToQuarter() : onClose()}>
           ← {showWorks ? '返回季度' : '返回首页'}
         </button>
         <span className="tm-heading">时光机</span>
@@ -239,24 +277,26 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
             {showWorks ? <><span>{quarter.year} 年</span> <span style={{ color: seasons[quarter.season].color }}>{seasons[quarter.season].name}</span><small> · 本季作品</small></>
               : <><span>{quarter.year} 年</span> <span style={{ color: seasons[quarter.season].color }}>{seasons[quarter.season].name}</span></>}
           </div>
-          <CoverFlow key={showWorks ? `works-${quarter.key}` : 'quarters'}
-            items={showWorks ? workItems : quarterItems} selected={showWorks ? workIndex : currentIndex}
-            onSelect={showWorks ? (index) => { setWorkIndex(index); setWorkFlipped(false); } : setQuarterIndex}
-            onOpen={showWorks ? () => { if (activeWork?.note.trim()) setWorkFlipped((value) => !value); } : () => { setWorkIndex(workArrangement.center); setWorkFlipped(false); setShowWorks(true); }}
-            flippable={showWorks} flipped={showWorks && workFlipped} reduced={reduced} />
+          <div className="tm-flow-shell">
+            <div className={`tm-flow-layer${showWorks ? ' tm-layer-hidden' : ''}`} aria-hidden={showWorks} inert={showWorks}
+              style={{ pointerEvents: showWorks ? 'none' : undefined }}>
+              <CoverFlow items={quarterItems} selected={currentIndex} onSelect={setQuarterIndex}
+                onOpen={() => { setWorkIndex(workArrangement.center); setWorkFlipped(false); setWorkExpanded(false); setWorkLayerMounted(true); setShowWorks(true); }}
+                reduced={reduced} />
+            </div>
+            {workLayerMounted && <div className="tm-flow-layer" aria-hidden={!showWorks} inert={!showWorks}
+              style={{ pointerEvents: showWorks ? undefined : 'none' }}>
+              <CoverFlow items={workItems} selected={workIndex}
+                onSelect={(index) => { setWorkIndex(index); setWorkFlipped(false); }}
+                onOpen={() => { if (activeWork?.note.trim()) setWorkFlipped((value) => !value); }}
+                flippable flipped={workFlipped} expanded={workExpanded} reduced={reduced} />
+            </div>}
+          </div>
           <div className="tm-detail" aria-live="polite">
             {showWorks && activeWork ? <>
               <h2>{activeWork.title}</h2><p>{activeWork.watch_date.replace('-', ' 年 ')} 月</p>
               <strong style={{ color: getRatingColor(activeWork.rating) }}>{activeWork.rating ? `${activeWork.rating} 分` : '未评分'}</strong>
             </> : <><p>{quarter.season * 3 + 1}–{quarter.season * 3 + 3} 月</p><strong>{quarter.items.length} 部作品</strong></>}
-          </div>
-          <div className="tm-controls" aria-label="切换封面">
-            <button type="button" disabled={(showWorks ? workIndex : currentIndex) === 0} onClick={() => {
-              if (showWorks) { setWorkIndex(Math.max(0, workIndex - 1)); setWorkFlipped(false); } else setQuarterIndex(Math.max(0, currentIndex - 1)); touchFeedback();
-            }} aria-label="上一张">‹</button>
-            <button type="button" disabled={(showWorks ? workIndex : currentIndex) >= (showWorks ? workItems : quarterItems).length - 1} onClick={() => {
-              if (showWorks) { setWorkIndex(Math.min(workItems.length - 1, workIndex + 1)); setWorkFlipped(false); } else setQuarterIndex(Math.min(quarterItems.length - 1, currentIndex + 1)); touchFeedback();
-            }} aria-label="下一张">›</button>
           </div>
         </>
       )}

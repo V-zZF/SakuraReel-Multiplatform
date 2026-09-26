@@ -1,6 +1,6 @@
 # SakuraReel 项目状态
 
-更新日期：2026-09-25 · 当前版本：0.6.1
+更新日期：2026-09-26 · 当前源码版本：0.6.2
 
 ## 项目概况
 
@@ -23,7 +23,7 @@ SakuraReel 是个人影视和番剧收藏库。React 前端供浏览器和 Tauri
 ### 已有安装包
 
 - Android：[SakuraReel-Android-v0.6.1-arm64.apk](../dist/SakuraReel-Android-v0.6.1-arm64.apk)；macOS：[SakuraReel-macOS-v0.6.1-arm64.dmg](../dist/SakuraReel-macOS-v0.6.1-arm64.dmg)。
-- 包名：`com.vzzf.sakurareel`；版本：`0.6.1`；Android 最低系统 Android 7.0（API 24），目标 API 36。
+- 包名：`com.vzzf.sakurareel`；现有安装包版本：`0.6.1`（v0.6.2 尚未打包）；Android 最低系统 Android 7.0（API 24），目标 API 36。
 - Android ARM64 Release APK 已签名并通过 `apksigner verify`；macOS Apple Silicon DMG 已通过镜像校验，应用包包含新图标。尚未完成手机安装和功能验收（F4）及 Mac 完整交互验收（E7）。
 - 后续签名升级需保留仓库外的本地签名密钥：`~/.local/share/sakurareel/android-signing/release.jks`。
 
