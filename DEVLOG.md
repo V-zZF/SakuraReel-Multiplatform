@@ -1,5 +1,10 @@
 # 开发日志
 
+## 2026-09-26 — v0.6.3 时光机标题裁切修复
+
+- 修复时光机作品标题在底部详情区被裁切的问题：详情区按内容自然增高，标题、日期和评分不再被 flex 压缩；保留底部留白。
+- 源码版本更新为 **0.6.3**；Android 版本号按 Tauri 配置由 `0.6.3` 派生为 `versionCode=6003`。构建并签名 Android ARM64 APK（`apksigner verify` 通过）及 Apple Silicon macOS DMG（`hdiutil verify` 通过），均保存在本地 `dist/`。iPhone IPA 因 Xcode 工程未配置开发者团队、现有 provisioning profile 与应用 Bundle ID 不匹配，当前未能导出。
+
 ## 2026-09-26 — v0.6.2 交互细节与播放链接修复
 
 - 时光机从季度进入本季作品时，封面从中心向两侧展开；返回时收拢。移除底部左右按钮，保留点选、拖动、触屏滑动和键盘方向键，并调整底部信息区留白。

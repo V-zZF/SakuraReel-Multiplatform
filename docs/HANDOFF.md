@@ -1,10 +1,10 @@
-# 交接 — v0.6.2 源码：交互细节与播放链接修复，实机验收待进行
+# 交接 — v0.6.3 源码：时光机标题裁切修复，实机验收待进行
 
 ## 下个窗口先读
 
 先读 `docs/PROJECT-STATUS.md`、`DEVLOG.md`、`docs/PLAN.md`、本文件。用户已确认 C5、D4、E2 没问题，并要求后续实机测试集中进行。E7、E9、F2、F4、F6 尚未实测，不要记为通过。
 
-v0.6.2 已调整时光机展开动画与底部留白、主页和排行榜悬浮反馈，并通过 Tauri Opener 打开播放链接。当前安装包仍是 v0.6.1；v0.6.2 尚未打包，播放链接的端到端跳转仍需在 App 内复验。
+v0.6.2 已调整时光机展开动画与底部留白、主页和排行榜悬浮反馈，并通过 Tauri Opener 打开播放链接。v0.6.3 修复了时光机标题裁切。v0.6.3 Android ARM64 APK 与 Apple Silicon macOS DMG 已生成；iPhone IPA 因缺少项目开发者团队设置且现有描述文件 Bundle ID 不匹配，未能导出。播放链接端到端跳转仍需在 App 内复验。
 
 ## 当前进度
 
@@ -19,7 +19,7 @@ v0.6.2 已调整时光机展开动画与底部留白、主页和排行榜悬浮�
 | E8 | Windows 构建脚本和 [构建指南](WINDOWS-BUILD.md) 已备；没有 Windows 安装包 |
 | E9 | 待集中验证 Windows 安装与打开 |
 | F1 | iOS 工程和模拟器启动已完成；iPhone 真机侧载验收待做 |
-| F3 | Android 工程已生成；ARM64 Release APK 已构建、签名并校验 |
+| F3 | Android 工程已生成；v0.6.3 ARM64 Release APK 已构建、签名并校验 |
 | F4 | Android 手机上安装和功能验收待用户完成 |
 | G | 时光机 UI 已实现；`npm run build`、`cargo check`、`go build ./...` 通过；Mac 视觉和交互验收待做 |
 | H | Rust 同步引擎尚未开始 |
@@ -33,10 +33,11 @@ v0.6.2 已调整时光机展开动画与底部留白、主页和排行榜悬浮�
 
 ## 编译与数据
 
-- Android v0.6.1 ARM64 Release APK 已签名并通过 `apksigner verify`，包名 `com.vzzf.sakurareel`，versionCode 6001，最低 Android API 24，目标 API 36。没有连接 Android 实机，F4 仍待验收。
-- macOS Apple Silicon v0.6.1 DMG 已通过 `hdiutil verify`；App 内 `icon.icns` 与 Tauri 源图标一致。DMG 为 ad hoc 签名，未做公证。
+- Android v0.6.3 ARM64 Release APK 已签名并通过 `apksigner verify`，包名 `com.vzzf.sakurareel`，versionCode 6003，最低 Android API 24，目标 API 36。没有连接 Android 实机，F4 仍待验收。
+- macOS Apple Silicon v0.6.3 DMG 已通过 `hdiutil verify`；DMG 为 ad hoc 签名，未做公证。
+- iPhone IPA 暂未导出：项目未配置 DEVELOPMENT_TEAM，机器现有描述文件的 Bundle ID 为 `com.yourdomain.SakuraReel`，与项目 `com.vzzf.sakurareel` 不匹配。
 - 已安装 `src-tauri/gen/android/` 工程所需 Gradle 依赖；因 Maven Central 返回 403，Gradle 仓库配置了 Aliyun 镜像。`BuildTask.kt` 指向仓库内 npm 安装的 Tauri CLI，Android Release 默认允许明文 HTTP，以支持用户配置的局域网服务端。
-- 签名 APK 位于 `dist/SakuraReel-Android-v0.6.1-arm64.apk`，macOS DMG 位于 `dist/SakuraReel-macOS-v0.6.1-arm64.dmg`。安装包留在本地 `dist/`，不提交到 Git。签名密钥保存在仓库外 `~/.local/share/sakurareel/android-signing/release.jks`；保留该密钥可让未来签名版本覆盖安装。
+- 签名 APK 位于 `dist/SakuraReel-Android-v0.6.3-arm64.apk`，macOS DMG 位于 `dist/SakuraReel-macOS-v0.6.3-arm64.dmg`。安装包留在本地 `dist/`，不提交到 Git。签名密钥保存在仓库外 `~/.local/share/sakurareel/android-signing/release.jks`；保留该密钥可让未来签名版本覆盖安装。
 - 当前未对本轮 Android 代码执行 UI 自动化或实机功能测试。
 - `/Users/zzf/code/sr-e2/` 是从阶段 B 备份创建并迁移的数据副本：127 条记录、133 个海报文件、rev 127。最后一次核对时 2333、1420 与 Tauri 进程均未运行。原始数据未动。
 - 本次提交包含当前 Android Gradle 工程、平台图标资源、前端和服务端更新及文档；签名 APK 与 macOS DMG 保留在本地 `dist/`，不纳入 Git。

@@ -51,8 +51,8 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 0.6.2
-        CFBundleVersion: "0.6.2"
+        CFBundleShortVersionString: 0.6.3
+        CFBundleVersion: "0.6.3"
         NSLocalNetworkUsageDescription: "连接局域网中的 SakuraReel 服务以同步收藏记录和海报。"
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
