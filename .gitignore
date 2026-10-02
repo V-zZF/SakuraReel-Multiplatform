@@ -10,6 +10,9 @@ src-tauri/gen/schemas/
 node_modules/
 ui/dist/
 
+# Local release packages (DMG, installers, APKs, and archives)
+/dist/
+
 # Go
 server/mal
 server/migrate

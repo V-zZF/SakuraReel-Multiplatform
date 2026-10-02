@@ -1,35 +1,86 @@
 # SakuraReel
 
-个人影视/番剧收藏库。共用 React 界面支持浏览器和 **Windows / macOS / iOS / Android** App。
-浏览器连接 Go 服务端；桌面和移动 App 目前在本地 SQLite 离线工作。App 与服务端的自动同步计划在阶段 G 实现。
+**SakuraReel** is a personal library for tracking anime and films. The shared React interface runs in a browser and in Tauri apps for Windows, macOS, iOS, and Android.
 
-> 当前源码版本：**SakuraReel v0.6.3**
+> **Current source version: v0.6.3** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
 
-## 目录
+## Features
 
-| 目录 | 内容 | 阶段 |
-|------|------|------|
-| `ui/` | 共用 React 前端（Tailwind + Framer Motion + dnd-kit），Web 与四个 App 都用这一份 | D |
-| `src-tauri/src/` | Tauri 命令、Rust SQLite 本地存储和海报管理 | E / F |
-| `src-tauri/gen/apple/` | Tauri 生成的 iOS Xcode 工程 | F |
-| `src-tauri/gen/android/` | Tauri 生成的 Android / Gradle 工程 | F |
-| `server/` | Go 服务端：原有 REST API + 网页托管 + 同步接口 | B / C |
-| `scripts/` | 工具链安装与 Windows 构建脚本 | H |
-| `docs/` | 项目计划、进度交接和平台构建指南 | — |
-| `dist/` | 当前可分发构建产物（Android APK、macOS DMG） | F |
+- Keep a personal catalog with posters, ratings, notes, and watch status.
+- Browse by season and revisit past seasons in the Time Machine.
+- Reorder collections and rankings with drag and drop.
+- Use the browser with the Go service, or use desktop and mobile apps with local SQLite storage and offline access.
+- The Go service exposes REST and sync APIs. Automatic synchronization from the native apps is not implemented yet.
 
-## 当前进度
+## Project layout
 
-阶段 A–D 已完成；阶段 E 的 macOS 基础启动通过，Windows 安装包和 macOS 完整功能验收待做；阶段 F 的 iOS 模拟器启动和 Android ARM64 APK 构建已完成，iPhone 真机与 Android 手机验收待做；阶段 G 时光机共用界面已实现，Mac 视觉和交互验收待做；同步阶段 H 尚未开始。
+| Path | Purpose |
+| --- | --- |
+| `ui/` | Shared React + TypeScript frontend for Web and Tauri apps |
+| `src-tauri/` | Rust commands, local SQLite storage, posters, and generated mobile projects |
+| `server/` | Go REST/sync API and embedded web frontend |
+| `scripts/` | Toolchain setup and platform build helpers |
+| `docs/` | Build guides, project plan, status, and handoff notes |
+| `DEVLOG.md` | Release and implementation history |
 
-当前 v0.6.3 安装包：Android ARM64 APK [`dist/SakuraReel-Android-v0.6.3-arm64.apk`](dist/SakuraReel-Android-v0.6.3-arm64.apk)；Apple Silicon macOS DMG [`dist/SakuraReel-macOS-v0.6.3-arm64.dmg`](dist/SakuraReel-macOS-v0.6.3-arm64.dmg)。iPhone IPA 尚未导出：Xcode 项目需要配置开发者团队，已有描述文件的应用标识也与当前 Bundle ID 不一致。
+## Run locally
 
-详细进度、目录职责、验收状态和后续安排见[项目状态](docs/PROJECT-STATUS.md)。分步实施计划见 [docs/PLAN.md](docs/PLAN.md)，计划里标 **【你】** 的步骤需要实机验证。
+### Browser and Go server
 
-本地启动 Go 服务端：
+Requirements: Node.js 24+, npm, and the Go version specified in [`server/go.mod`](server/go.mod).
+
+```sh
+cd ui
+npm ci
+npm run build
+
+cd ../server
+go run .
+```
+
+Open <http://localhost:2233>. `npm run build` creates the frontend and copies it into `server/frontend/dist/`, which is embedded by the Go server. To run the Vite development server, start Go in one terminal and run `cd ui && npm run dev` in another.
+
+Use a separate data directory and port when testing against a copy of your data:
 
 ```sh
 cd server
-go run .                                  # http://localhost:2233
-go run . -data <数据目录> -port 2333       # 对数据副本运行
+go run . -data /path/to/data-copy -port 2333
 ```
+
+### Native app development
+
+Install the prerequisites for [Tauri v2](https://v2.tauri.app/start/prerequisites/), Rust, and the target platform. Then:
+
+```sh
+cd ui
+npm ci
+npm run tauri -- dev
+```
+
+Platform-specific build and signing requirements vary. See the [Windows build guide](docs/WINDOWS-BUILD.md); iOS builds require Xcode and a matching Apple signing team/profile. Android release APK signing uses a private keystore that is intentionally not stored in this repository.
+
+## Current release artifacts
+
+The v0.6.3 Apple Silicon macOS DMG and Android ARM64 APK are built locally under `dist/`; generated packages and signing material are excluded from Git. An iPhone IPA is not available yet because the project needs a matching Apple development team and provisioning profile. Windows packaging is documented but has not been produced from this environment.
+
+## Development checks
+
+```sh
+cd ui
+npm ci
+npm run lint
+npm run build
+
+cd ../server
+go test ./...
+```
+
+GitHub Actions runs the frontend lint/build and Go tests on pushes and pull requests to `main`.
+
+## Data and privacy
+
+The browser uses the Go server's local database and poster directory. Native apps currently store data in their device-local SQLite database and can work offline. Automatic synchronization between native apps and the Go server is planned but is not available yet. Back up the server data directory (`anime.db` and `posters/`) separately; it is runtime data and is not committed.
+
+## Contributing
+
+Please open an issue for bugs or feature requests. For changes, use a focused pull request and include the checks you ran. Do not commit personal databases, poster collections, release packages, signing keys, provisioning profiles, or credentials.

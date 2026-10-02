@@ -40,7 +40,12 @@ rustup show active-toolchain
 
 ## 2. 取得源码
 
-使用包含 `src-tauri/`、`ui/`、`server/`、`scripts/` 的完整仓库。项目当前没有配置 Git remote；如果 agent 使用独立 Windows 机器，请将当前仓库工作区复制/同步过去。不要只复制 `ui/` 或 `src-tauri/`。
+使用包含 `src-tauri/`、`ui/`、`server/`、`scripts/` 的完整仓库。请从 GitHub 克隆完整仓库，或同步完整工作区；不要只复制 `ui/` 或 `src-tauri/`。
+
+```powershell
+git clone https://github.com/V-zZF/SakuraReel-Multiplatform.git
+cd SakuraReel-Multiplatform
+```
 
 进入仓库根目录检查结构：
 
