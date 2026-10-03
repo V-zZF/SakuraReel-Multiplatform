@@ -1,6 +1,6 @@
 [package]
 name = "sakurareel"
-version = "0.6.3"
+version = "0.7.9"
 description = "SakuraReel desktop app"
 edition = "2021"
 

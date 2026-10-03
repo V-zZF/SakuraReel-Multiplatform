@@ -2,7 +2,7 @@
 
 **SakuraReel** is a personal library for tracking anime and films. The shared React interface runs in a browser and in Tauri apps for Windows, macOS, iOS, and Android.
 
-> **Current source version: v0.6.3** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
+> **Current source version: v0.7.9** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
 
 ## Features
 
@@ -58,6 +58,12 @@ npm run tauri -- dev
 ```
 
 Platform-specific build and signing requirements vary. See the [Windows build guide](docs/WINDOWS-BUILD.md); iOS builds require Xcode and a matching Apple signing team/profile. Android release APK signing uses a private keystore that is intentionally not stored in this repository.
+
+## Web TMDb search and local details
+
+The Web frontend supports TMDb search, whole-series or season collections (including specials), selective metadata import, and locally stored work details. Use the existing add button to open search and configure your personal TMDb API key. Metadata is stored in the Go server's SQLite database; selected posters, backdrops, and logos are saved beside it in `posters/`. Remote metadata imports preserve personal ratings, notes, watch dates, viewing status, playback links, and order.
+
+See [the Web acceptance guide](docs/WEB-TMDB-ACCEPTANCE.md) for setup, test steps, storage behavior, and current limitations. Native TMDb adaptation and platform packaging are deferred until Web acceptance.
 
 ## Current release artifacts
 

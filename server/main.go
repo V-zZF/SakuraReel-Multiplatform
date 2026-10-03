@@ -15,7 +15,7 @@ import (
 )
 
 // 版本号（每次迭代递增）
-const appVersion = "1.3.0"
+const appVersion = "0.7.9"
 
 //go:embed frontend/dist
 var embeddedDist embed.FS
@@ -89,6 +89,14 @@ func main() {
 	mux.HandleFunc("PUT /api/anime/reorder", handler.ReorderAnime) // 批量排序
 	mux.HandleFunc("DELETE /api/anime/{id}", handler.DeleteAnime)  // 删除
 
+	mux.HandleFunc("PUT /api/anime/{id}/metadata", handler.EditMetadata)
+	mux.HandleFunc("GET /api/tmdb/config", handler.TMDbConfig)
+	mux.HandleFunc("POST /api/tmdb/validate", handler.TMDbValidate)
+	mux.HandleFunc("POST /api/tmdb/search", handler.TMDbSearch)
+	mux.HandleFunc("POST /api/tmdb/seasons", handler.TMDbSeasons)
+	mux.HandleFunc("POST /api/tmdb/preview", handler.TMDbPreview)
+	mux.HandleFunc("POST /api/tmdb/import", handler.TMDbImport)
+
 	// 文件上传
 	mux.HandleFunc("POST /api/upload", handler.UploadPoster)
 
@@ -151,7 +159,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Preview-Owner")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

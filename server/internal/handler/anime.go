@@ -523,6 +523,10 @@ func randomHex(n int) string {
 func ServePosters(w http.ResponseWriter, r *http.Request) {
 	filename := r.PathValue("filename")
 	filename = filepath.Base(filename)
+	if strings.EqualFold(filepath.Ext(filename), ".svg") {
+		w.Header().Set("Content-Security-Policy", "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+	}
 	http.ServeFile(w, r, filepath.Join(postersDir, filename))
 }
 

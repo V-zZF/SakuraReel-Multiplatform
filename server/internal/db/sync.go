@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -31,6 +32,9 @@ func PushAnime(incoming []model.Anime) ([]model.Anime, []SyncRejection, int64, e
 			return nil, nil, 0, err
 		}
 		if current != nil {
+			if a.Metadata == nil {
+				a.Metadata = current.Metadata
+			}
 			// A tombstone is terminal for this uid. A new item needs a new uid.
 			if current.DeletedAt != "" && a.DeletedAt == "" {
 				rejected = append(rejected, SyncRejection{a.UID, "deleted", *current})
@@ -49,10 +53,10 @@ func PushAnime(incoming []model.Anime) ([]model.Anime, []SyncRejection, int64, e
 		a.ServerRev = rev
 		if current == nil {
 			result, err := tx.Exec(`INSERT INTO anime
-				(uid,title,category,rating,note,poster,watch_date,play_link,position,leaderboard_position,created_at,updated_at,deleted_at,server_rev)
-				VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+				(uid,title,category,rating,note,poster,watch_date,play_link,position,leaderboard_position,created_at,updated_at,deleted_at,server_rev,metadata)
+				VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 				a.UID, a.Title, a.Category, a.Rating, a.Note, a.Poster, a.WatchDate, a.PlayLink, a.Position, a.LeaderboardPosition,
-				a.CreatedAt, a.UpdatedAt, a.DeletedAt, rev)
+				a.CreatedAt, a.UpdatedAt, a.DeletedAt, rev, model.EncodeMetadata(a.Metadata))
 			if err != nil {
 				return nil, nil, 0, err
 			}
@@ -64,9 +68,9 @@ func PushAnime(incoming []model.Anime) ([]model.Anime, []SyncRejection, int64, e
 			a.ID = current.ID
 			// created_at is immutable after the first insert.
 			a.CreatedAt = current.CreatedAt
-			_, err = tx.Exec(`UPDATE anime SET title=?,category=?,rating=?,note=?,poster=?,watch_date=?,play_link=?,position=?,leaderboard_position=?,updated_at=?,deleted_at=?,server_rev=? WHERE uid=?`,
+			_, err = tx.Exec(`UPDATE anime SET title=?,category=?,rating=?,note=?,poster=?,watch_date=?,play_link=?,position=?,leaderboard_position=?,updated_at=?,deleted_at=?,server_rev=?,metadata=? WHERE uid=?`,
 				a.Title, a.Category, a.Rating, a.Note, a.Poster, a.WatchDate, a.PlayLink, a.Position, a.LeaderboardPosition,
-				a.UpdatedAt, a.DeletedAt, rev, a.UID)
+				a.UpdatedAt, a.DeletedAt, rev, model.EncodeMetadata(a.Metadata), a.UID)
 			if err != nil {
 				return nil, nil, 0, err
 			}
@@ -85,7 +89,7 @@ func PushAnime(incoming []model.Anime) ([]model.Anime, []SyncRejection, int64, e
 
 // PullAnime returns rows and the cursor from one SQLite snapshot, including tombstones.
 func PullAnime(since int64) ([]model.Anime, int64, error) {
-	tx, err := DB.BeginTx(nil, &sql.TxOptions{ReadOnly: true})
+	tx, err := DB.BeginTx(context.Background(), &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return nil, 0, err
 	}

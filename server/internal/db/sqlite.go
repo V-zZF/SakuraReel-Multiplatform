@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 var DB *sql.DB
 
 // schemaVersion 当前库结构版本，记录在 meta 表
-const schemaVersion = "2"
+const schemaVersion = "3"
 
 // timeLayout 与 SQLite datetime('now','localtime') 的输出格式一致
 const timeLayout = "2006-01-02 15:04:05"
@@ -65,6 +66,7 @@ const schemaRevIndex = `CREATE INDEX IF NOT EXISTS idx_anime_server_rev ON anime
 
 // addableColumns 旧库缺列时按此补齐（顺序 = 历史 ALTER 顺序）
 var addableColumns = []struct{ name, ddl string }{
+	{"metadata", "metadata TEXT NOT NULL DEFAULT 'null'"},
 	{"uid", "uid TEXT NOT NULL DEFAULT ''"},
 	{"watch_date", "watch_date TEXT NOT NULL DEFAULT ''"},
 	{"position", "position INTEGER NOT NULL DEFAULT 0"},
@@ -146,7 +148,7 @@ func ensureSchema(db *sql.DB) (added []string, dropped []string, err error) {
 	}
 
 	// 索引要等列补齐之后再建（旧库原本没有 uid / server_rev 列）
-	for _, stmt := range []string{schemaUIDIndex, schemaRevIndex} {
+	for _, stmt := range []string{schemaUIDIndex, schemaRevIndex, `CREATE UNIQUE INDEX IF NOT EXISTS idx_anime_tmdb ON anime(json_extract(metadata, '$.media_type'), json_extract(metadata, '$.tmdb_id'), COALESCE(json_extract(metadata, '$.season_number'), -1)) WHERE deleted_at = '' AND json_extract(metadata, '$.tmdb_id') > 0`} {
 		if _, err = db.Exec(stmt); err != nil {
 			return added, dropped, fmt.Errorf("建索引失败: %w", err)
 		}
@@ -249,23 +251,31 @@ func nextRevTx(tx *sql.Tx) (int64, error) {
 // ========== 基础 CRUD 函数 ==========
 
 // 全字段扫描列表（用于 SELECT 查询）；已删除（墓碑）记录一律排除
-const listColumns = "id, uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, server_rev"
+const listColumns = "id, uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, server_rev, metadata"
 const listQuery = "SELECT " + listColumns + " FROM anime WHERE deleted_at = ''"
 const getQuery = "SELECT " + listColumns + " FROM anime WHERE deleted_at = '' AND id = ?"
 
 func scanAnime(rows *sql.Rows) (*model.Anime, error) {
 	var a model.Anime
+	var metadata string
 	err := rows.Scan(&a.ID, &a.UID, &a.Title, &a.Category, &a.Rating, &a.Note, &a.Poster, &a.WatchDate,
-		&a.PlayLink, &a.Position, &a.LeaderboardPosition, &a.CreatedAt, &a.UpdatedAt, &a.DeletedAt, &a.ServerRev)
+		&a.PlayLink, &a.Position, &a.LeaderboardPosition, &a.CreatedAt, &a.UpdatedAt, &a.DeletedAt, &a.ServerRev, &metadata)
+	if err == nil {
+		err = json.Unmarshal([]byte(metadata), &a.Metadata)
+	}
 	return &a, err
 }
 
 func scanAnimeRow(row *sql.Row) (*model.Anime, error) {
 	var a model.Anime
+	var metadata string
 	err := row.Scan(&a.ID, &a.UID, &a.Title, &a.Category, &a.Rating, &a.Note, &a.Poster, &a.WatchDate,
-		&a.PlayLink, &a.Position, &a.LeaderboardPosition, &a.CreatedAt, &a.UpdatedAt, &a.DeletedAt, &a.ServerRev)
+		&a.PlayLink, &a.Position, &a.LeaderboardPosition, &a.CreatedAt, &a.UpdatedAt, &a.DeletedAt, &a.ServerRev, &metadata)
 	if err == sql.ErrNoRows {
 		return nil, nil
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(metadata), &a.Metadata)
 	}
 	return &a, err
 }
@@ -327,9 +337,9 @@ func CreateAnime(a *model.Anime) (int64, error) {
 	a.ServerRev = rev
 
 	result, err := tx.Exec(
-		"INSERT INTO anime (uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, server_rev) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO anime (uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, server_rev, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		a.UID, a.Title, a.Category, a.Rating, a.Note, a.Poster, a.WatchDate, a.PlayLink, a.Position, a.LeaderboardPosition,
-		now, now, "", rev,
+		now, now, "", rev, model.EncodeMetadata(a.Metadata),
 	)
 	if err != nil {
 		return 0, err
@@ -361,9 +371,9 @@ func UpdateAnime(id int64, a *model.Anime) error {
 	now := Now()
 
 	if _, err := tx.Exec(
-		"UPDATE anime SET title=?, category=?, rating=?, note=?, poster=?, watch_date=?, play_link=?, position=?, leaderboard_position=?, updated_at=?, server_rev=? WHERE id=? AND deleted_at = ''",
+		"UPDATE anime SET title=?, category=?, rating=?, note=?, poster=?, watch_date=?, play_link=?, position=?, leaderboard_position=?, updated_at=?, server_rev=?, metadata=? WHERE id=? AND deleted_at = ''",
 		a.Title, a.Category, a.Rating, a.Note, a.Poster, a.WatchDate, a.PlayLink, a.Position, a.LeaderboardPosition,
-		now, rev, id,
+		now, rev, model.EncodeMetadata(a.Metadata), id,
 	); err != nil {
 		return err
 	}

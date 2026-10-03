@@ -49,7 +49,7 @@ func validSyncAnime(a model.Anime) bool {
 	if a.Poster != "" && !validPosterName(a.UID, a.Poster) {
 		return false
 	}
-	return true
+	return validMetadata(a.Metadata)
 }
 
 func validPosterName(uid, name string) bool {

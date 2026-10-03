@@ -14,6 +14,11 @@ import Toast, { type ToastMessage } from './components/Toast';
 import AnimeCard from './components/AnimeCard';
 import useDragSensor from './hooks/useDragSensor';
 import TimeMachine from './components/TimeMachine';
+import { isTauri } from '@tauri-apps/api/core';
+import TMDbSearch from './components/tmdb/TMDbSearch';
+import WorkDetail from './components/tmdb/WorkDetail';
+import { captureSurfaceOrigin } from './components/tmdb/surfaceOrigin';
+const webFeatures = !isTauri();
 
 const CATEGORY_ORDER = ['watched', 'watching', 'wantwatch'];
 
@@ -33,12 +38,16 @@ const pageTransitionBack = {
 };
 
 export default function App() {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [detailAnime, setDetailAnime] = useState<Anime | null>(null);
+  const [refreshToken, setRefreshToken] = useState(0);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showTimeMachine, setShowTimeMachine] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAnime, setEditingAnime] = useState<Anime | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [personalFocus, setPersonalFocus] = useState<string>();
   const [activeCategory, setActiveCategory] = useState<string>('watched');
   const [categoryDirection, setCategoryDirection] = useState(1);
   const changeCategory = useCallback((next: string) => {
@@ -178,14 +187,14 @@ export default function App() {
   // 打开添加弹窗
   const openAdd = useCallback(() => {
     setEditingAnime(null);
-    setModalOpen(true);
+    if (webFeatures) setSearchOpen(true); else setModalOpen(true);
   }, []);
 
   // 打开编辑弹窗（编辑模式下不触发）
   const openEdit = useCallback((anime: Anime) => {
     if (isEditing) return;
-    setEditingAnime(anime);
-    setModalOpen(true);
+    if (webFeatures) { captureSurfaceOrigin(document.querySelector<HTMLElement>('.cursor-pointer:hover')); setDetailAnime(anime); }
+    else { setEditingAnime(anime); setModalOpen(true); }
   }, [isEditing]);
 
   // 关闭弹窗
@@ -198,22 +207,25 @@ export default function App() {
   const handleSave = useCallback(async (input: AnimeInput) => {
     try {
       if (editingAnime) {
-        await update(editingAnime.id, input);
+        const saved = await update(editingAnime.id, input);
+        if (webFeatures) { setDetailAnime(saved); setRefreshToken(v => v + 1); setAnimeList(prev => saved.category === activeCategory ? [...prev.filter(a => a.id !== saved.id), saved] : prev.filter(a => a.id !== saved.id)); }
         showToast('影视剧已更新', 'success');
       } else {
         await create(input);
+        if (webFeatures) setAnimeList(prev => prev.filter(a => a.category === activeCategory));
         showToast('影视剧已添加', 'success');
       }
     } catch (e) {
       showToast(e instanceof Error ? e.message : '操作失败', 'error');
       throw e;
     }
-  }, [editingAnime, create, update, showToast]);
+  }, [editingAnime, create, update, showToast, setAnimeList, activeCategory]);
 
   // 删除
   const handleDelete = useCallback(async (id: number) => {
     try {
       await remove(id);
+      if (webFeatures) { setDetailAnime(null); setRefreshToken(v => v + 1); }
       showToast('影视剧已删除', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : '删除失败', 'error');
@@ -263,7 +275,7 @@ export default function App() {
             {...pageTransition}
             className="py-6"
           >
-            <LeaderBoard onEditAnime={openEdit} isEditing={isEditing} onToast={showToast} />
+            <LeaderBoard refreshToken={refreshToken} onEditAnime={openEdit} isEditing={isEditing} onToast={showToast} />
           </motion.div>
         ) : (
           <motion.div
@@ -365,7 +377,7 @@ export default function App() {
                       strategy={rectSortingStrategy}
                       disabled={!isEditing}
                     >
-                      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,160px),190px))] lg:grid-cols-[repeat(5,minmax(0,240px))] justify-center gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(min(100%,160px),190px))] lg:grid-cols-[repeat(5,minmax(0,240px))] justify-center gap-4">
                         {sortedList.map((anime) => (
                           <SortableCard
                             key={anime.id}
@@ -432,8 +444,21 @@ export default function App() {
         onSave={handleSave}
         onDelete={handleDelete}
         onUpload={handleUpload}
+        initialFocus={personalFocus}
+        personalOnly={webFeatures && !!editingAnime}
+        protectChanges={webFeatures}
       />
       </div>
+      <AnimatePresence mode="wait">
+      {searchOpen && <TMDbSearch key="tmdb-search" onClose={() => setSearchOpen(false)} onManual={() => { setPersonalFocus(undefined); setSearchOpen(false); setEditingAnime(null); setModalOpen(true); }} onSaved={a => {
+        setSearchOpen(false); setDetailAnime(a); setRefreshToken(v => v + 1);
+        setAnimeList(prev => a.category === activeCategory ? [...prev.filter(item => item.id !== a.id), a] : prev.filter(item => item.id !== a.id));
+      }} onOpen={a => { setSearchOpen(false); setDetailAnime(a); }} />}
+      {detailAnime && !modalOpen && <WorkDetail key="work-detail" anime={detailAnime} onClose={() => setDetailAnime(null)} onOpen={setDetailAnime} onPersonalEdit={(a, field) => { setPersonalFocus(field); setEditingAnime(a); setModalOpen(true); }} onChanged={a => {
+        setDetailAnime(a); setRefreshToken(v => v + 1);
+        setAnimeList(prev => a.category === activeCategory ? [...prev.filter(item => item.id !== a.id), a] : prev.filter(item => item.id !== a.id));
+      }} />}
+      </AnimatePresence>
       <AnimatePresence>
         {showTimeMachine && <TimeMachine onClose={() => setShowTimeMachine(false)} />}
       </AnimatePresence>

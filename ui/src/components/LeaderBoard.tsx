@@ -158,12 +158,13 @@ const listItem = {
 // ── LeaderBoard 主组件 ──
 
 interface LeaderBoardProps {
+  refreshToken?: number;
   onEditAnime: (anime: Anime) => void;
   isEditing: boolean;
   onToast?: (text: string, type: 'success' | 'error') => void;
 }
 
-export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderBoardProps) {
+export default function LeaderBoard({ onEditAnime, isEditing, onToast, refreshToken = 0 }: LeaderBoardProps) {
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,7 +176,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
   // 加载全部影视剧（独立 fetch）
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    if (refreshToken === 0) setLoading(true);
     setError(null);
     data.list()
       .then((data) => {
@@ -188,7 +189,7 @@ export default function LeaderBoard({ onEditAnime, isEditing, onToast }: LeaderB
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshToken]);
 
   // 按评分降序（高→低），同分按 leaderboard_position 降序
   const sortedList = useMemo(() => {
