@@ -11,6 +11,7 @@ import (
 	"mal/internal/tmdb"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -33,7 +34,7 @@ func TestTMDbImportLifecycle(t *testing.T) {
 	fixture := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.URL.Path, "/images/") {
 			imageDownloads.Add(1)
-			if brokenImage {
+			if brokenImage && strings.HasSuffix(r.URL.Path, "/shared.png") {
 				w.WriteHeader(500)
 				return
 			}
@@ -45,7 +46,10 @@ func TestTMDbImportLifecycle(t *testing.T) {
 			w.WriteHeader(401)
 			return
 		}
-		writeJSON(w, 200, map[string]any{"id": 10, "title": "测试电影", "overview": "远端简介", "release_date": "2026-01-01", "runtime": 120, "poster_path": "/poster.png", "images": map[string]any{"posters": []map[string]string{{"file_path": "/poster.png"}}}})
+		writeJSON(w, 200, map[string]any{"id": 10, "title": "测试电影", "overview": "远端简介", "release_date": "2026-01-01", "runtime": 120, "credits": map[string]any{
+			"cast": []map[string]any{{"id": 1, "name": "演员", "profile_path": "/shared.png"}},
+			"crew": []map[string]any{{"id": 1, "name": "演员", "profile_path": "/shared.png"}},
+		}, "poster_path": "/poster.png", "images": map[string]any{"posters": []map[string]string{{"file_path": "/poster.png"}}}})
 	}))
 	defer fixture.Close()
 	mux := http.NewServeMux()
@@ -80,7 +84,7 @@ func TestTMDbImportLifecycle(t *testing.T) {
 	if len(all) != 0 {
 		t.Fatal("preview wrote a collection")
 	}
-	payload := map[string]any{"token": preview.Token, "category": "wantwatch", "fields": []string{"overview", "runtime"}, "images": map[string]string{"poster": "/poster.png"}}
+	payload := map[string]any{"token": preview.Token, "category": "wantwatch", "fields": []string{"overview", "runtime", "cast", "crew"}, "images": map[string]string{"poster": "/poster.png"}}
 	status, _ = request("/import", "POST", "other-browser-owner-456", payload)
 	if status != 410 {
 		t.Fatal("preview not scoped to browser")
@@ -100,6 +104,9 @@ func TestTMDbImportLifecycle(t *testing.T) {
 	if len(all) != 0 {
 		t.Fatal("failed download wrote a collection")
 	}
+	if files, err := os.ReadDir(postersDir); err != nil || len(files) != 0 {
+		t.Fatalf("failed import left images behind: %v %v", files, err)
+	}
 	brokenImage = false
 	payload["prepare_only"] = true
 	status, out = request("/import", "POST", owner, payload)
@@ -111,6 +118,9 @@ func TestTMDbImportLifecycle(t *testing.T) {
 		t.Fatal("preparing images created a collection")
 	}
 	preparedDownloads := imageDownloads.Load()
+	if preparedDownloads != 4 {
+		t.Fatalf("expected poster and one shared portrait per attempt, got %d downloads", preparedDownloads)
+	}
 	delete(payload, "prepare_only")
 	status, out = request("/import", "POST", owner, payload)
 	if status != 200 {
@@ -123,6 +133,9 @@ func TestTMDbImportLifecycle(t *testing.T) {
 	json.Unmarshal(out["data"], &a)
 	if a.Metadata == nil || a.Metadata.Overview != "远端简介" || !validPosterName(a.UID, a.Poster) {
 		t.Fatalf("bad saved metadata %+v", a)
+	}
+	if len(a.Metadata.Cast) != 1 || len(a.Metadata.Crew) != 1 || a.Metadata.Cast[0].Photo == "" || a.Metadata.Cast[0].Photo != a.Metadata.Crew[0].Photo || !localImageName(a.Metadata.Cast[0].Photo) {
+		t.Fatalf("associated images were not localized and shared: %+v", a.Metadata)
 	}
 	if a.Title != "自定义电影" || a.Rating != 7 || a.Note != "导入短评" || a.WatchDate != "2025-06" || a.PlayLink != "https://example.org/watch" {
 		t.Fatalf("personal record import lost fields: %+v", a)

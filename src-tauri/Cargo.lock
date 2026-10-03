@@ -2921,7 +2921,7 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "sakurareel"
-version = "0.7.9"
+version = "0.7.10"
 dependencies = [
  "chrono",
  "rusqlite",

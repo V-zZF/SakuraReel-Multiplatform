@@ -2,7 +2,7 @@
 
 **SakuraReel** is a personal library for tracking anime and films. The shared React interface runs in a browser and in Tauri apps for Windows, macOS, iOS, and Android.
 
-> **Current source version: v0.7.9** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
+> **Current source version: v0.7.10** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
 
 ## Features
 
@@ -10,6 +10,7 @@
 - Browse by season and revisit past seasons in the Time Machine.
 - Reorder collections and rankings with drag and drop.
 - Use the browser with the Go service, or use desktop and mobile apps with local SQLite storage and offline access.
+- In the Web app, search TMDb, choose seasons and metadata fields, and save work details and images locally. Imports download up to six images concurrently and reuse shared portraits.
 - The Go service exposes REST and sync APIs. Automatic synchronization from the native apps is not implemented yet.
 
 ## Project layout
@@ -63,11 +64,53 @@ Platform-specific build and signing requirements vary. See the [Windows build gu
 
 The Web frontend supports TMDb search, whole-series or season collections (including specials), selective metadata import, and locally stored work details. Use the existing add button to open search and configure your personal TMDb API key. Metadata is stored in the Go server's SQLite database; selected posters, backdrops, and logos are saved beside it in `posters/`. Remote metadata imports preserve personal ratings, notes, watch dates, viewing status, playback links, and order.
 
-See [the Web acceptance guide](docs/WEB-TMDB-ACCEPTANCE.md) for setup, test steps, storage behavior, and current limitations. Native TMDb adaptation and platform packaging are deferred until Web acceptance.
+See [the Web acceptance guide](docs/WEB-TMDB-ACCEPTANCE.md) for setup, test steps, storage behavior, and current limitations. TMDb search, metadata import, and this download optimization currently apply to the Web/Go path. The DMG and APK use the native SQLite data layer; native TMDb support is still pending.
 
-## Current release artifacts
+## Download and install v0.7.10
 
-The v0.6.3 Apple Silicon macOS DMG and Android ARM64 APK are built locally under `dist/`; generated packages and signing material are excluded from Git. An iPhone IPA is not available yet because the project needs a matching Apple development team and provisioning profile. Windows packaging is documented but has not been produced from this environment.
+Download the packages from [GitHub Releases](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/tag/v0.7.10):
+
+| Package | Requirements | Download |
+| --- | --- | --- |
+| macOS DMG | Apple Silicon (ARM64), macOS 11+ | [SakuraReel-macOS-v0.7.10-arm64.dmg](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-macOS-v0.7.10-arm64.dmg) |
+| Android APK | ARM64, Android 7.0+ (API 24) | [SakuraReel-Android-v0.7.10-arm64.apk](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-Android-v0.7.10-arm64.apk) |
+| SHA-256 checksums | Verify either download | [SHA256SUMS-v0.7.10.txt](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SHA256SUMS-v0.7.10.txt) |
+
+On macOS, open the DMG and drag SakuraReel into Applications. This build has an ad hoc signature and is not Apple-notarized; if macOS blocks opening it, use System Settings → Privacy & Security → Open Anyway for the downloaded app.
+
+On Android, allow installation from the app used to open the APK. The APK uses the existing release signing key, so it can update earlier packages signed with that key. Keep the installed app when upgrading to preserve its local data. The Android target SDK is API 36.
+
+Packages and signing material are excluded from Git; release packages are attached to GitHub Releases and retained locally in `dist/`. Intel macOS, Windows installers, and iPhone IPA packages are not included in this release. iPhone distribution still needs a matching Apple signing team and provisioning profile.
+
+## Build release packages
+
+Install the Tauri platform prerequisites and run `npm ci` in `ui/` first. For an Apple Silicon DMG, build on an Apple Silicon Mac:
+
+```sh
+cd ui
+npm run tauri -- build --bundles dmg --ci --config '{"bundle":{"macOS":{"signingIdentity":"-"}}}'
+```
+
+The DMG is generated in `src-tauri/target/release/bundle/dmg/`. The `-` identity creates an ad hoc signature; Developer ID signing and notarization require separate Apple distribution credentials.
+
+For an Android ARM64 release APK, configure `JAVA_HOME`, `ANDROID_HOME`, and `ANDROID_NDK_HOME` for your installed JDK, Android SDK, and NDK, then:
+
+```sh
+cd ui
+npm run tauri -- android build --target aarch64 --apk --ci
+```
+
+The unsigned APK is generated in `src-tauri/gen/android/app/build/outputs/apk/universal/release/`. Before installing or publishing it, align it and sign it with your existing private release keystore. With Android SDK build-tools on `PATH`:
+
+```sh
+zipalign -f -P 16 4 app-universal-release-unsigned.apk SakuraReel-Android-v0.7.10-arm64.apk
+apksigner sign --ks /path/to/release.jks --ks-key-alias sakurareel \
+  --ks-pass file:/path/to/password-file SakuraReel-Android-v0.7.10-arm64.apk
+apksigner verify --verbose --print-certs SakuraReel-Android-v0.7.10-arm64.apk
+zipalign -c -P 16 4 SakuraReel-Android-v0.7.10-arm64.apk
+```
+
+Never commit the keystore or its password. Keep the same signing key for future APK upgrades. After downloading both packages and the checksum file into one directory, verify them with `shasum -a 256 -c SHA256SUMS-v0.7.10.txt`.
 
 ## Development checks
 
@@ -78,7 +121,7 @@ npm run lint
 npm run build
 
 cd ../server
-go test ./...
+go test -race ./...
 ```
 
 GitHub Actions runs the frontend lint/build and Go tests on pushes and pull requests to `main`.

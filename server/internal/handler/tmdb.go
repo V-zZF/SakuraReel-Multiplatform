@@ -452,60 +452,56 @@ func TMDbImport(w http.ResponseWriter, r *http.Request) {
 				fail(w, 400, "图片不属于本次预览")
 				return
 			}
-			name, e := downloadImage(r.Context(), c, path, kind)
-			if e != nil {
-				imageErrors[kind] = e.Error()
-				continue
-			}
-			downloaded = append(downloaded, name)
-			if kind == "poster" {
-				a.Poster = name
-			} else {
-				value, _ := json.Marshal(name)
-				fields[kind] = value
-			}
 		}
-		// Only selected groups download their associated images. One path is saved once.
-		imageCache := map[string]string{}
-		saveImage := func(path, key string) string {
-			if path == "" {
-				return ""
-			}
-			if name, ok := imageCache[path]; ok {
-				return name
-			}
-			name, e := downloadImage(r.Context(), c, path, "portrait")
-			if e != nil {
-				imageErrors[key] = "关联图片保存失败，可取消此资料组后重试"
-				return path
-			}
-			downloaded = append(downloaded, name)
-			imageCache[path] = name
-			return name
+		// Plan all downloads before starting network work. Shared paths within the
+		// same rendition are fetched once, including failed downloads.
+		batch := imageDownloadBatch{}
+		imageNames := map[string]*string{}
+		for kind, path := range in.Images {
+			name := new(string)
+			imageNames[kind] = name
+			batch.add(path, kind, kind, name)
 		}
-		savePeople := func(people []model.Person, key string) []model.Person {
+		peopleFields := map[string][]model.Person{}
+		var episodes []model.Episode
+		addPeople := func(people []model.Person, key string) {
 			for i := range people {
-				people[i].Photo = saveImage(people[i].Photo, key)
+				batch.add(people[i].Photo, "portrait", key, &people[i].Photo)
 			}
-			return people
 		}
 		for _, key := range in.Fields {
+			if _, planned := peopleFields[key]; planned {
+				continue
+			}
 			if key == "cast" || key == "crew" || key == "creators" {
 				var people []model.Person
 				_ = json.Unmarshal(source[key], &people)
-				fields[key], _ = json.Marshal(savePeople(people, key))
+				peopleFields[key] = people
+				addPeople(people, key)
 			}
-			if key == "episodes" {
-				var episodes []model.Episode
+			if key == "episodes" && episodes == nil {
 				_ = json.Unmarshal(source[key], &episodes)
 				for i := range episodes {
 					e := &episodes[i]
-					e.Still = saveImage(e.Still, key)
-					e.GuestStars = savePeople(e.GuestStars, key)
-					e.Crew = savePeople(e.Crew, key)
+					batch.add(e.Still, "portrait", key, &e.Still)
+					addPeople(e.GuestStars, key)
+					addPeople(e.Crew, key)
 				}
-				fields[key], _ = json.Marshal(episodes)
 			}
+		}
+		downloaded, imageErrors = batch.save(r.Context(), c)
+		for kind, name := range imageNames {
+			if kind == "poster" {
+				a.Poster = *name
+			} else {
+				fields[kind], _ = json.Marshal(*name)
+			}
+		}
+		for key, people := range peopleFields {
+			fields[key], _ = json.Marshal(people)
+		}
+		if episodes != nil {
+			fields["episodes"], _ = json.Marshal(episodes)
 		}
 
 		if len(imageErrors) > 0 {

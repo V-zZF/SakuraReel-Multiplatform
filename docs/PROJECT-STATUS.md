@@ -1,6 +1,6 @@
 # SakuraReel 项目状态
 
-更新日期：2026-10-03 · 当前源码版本：0.7.9
+更新日期：2026-10-03 · 当前源码版本：0.7.10
 
 ## 项目概况
 
@@ -22,10 +22,12 @@ SakuraReel 是个人影视和番剧收藏库。React 前端供浏览器和 Tauri
 
 ### 已有安装包
 
-- Android：[SakuraReel-Android-v0.6.3-arm64.apk](../dist/SakuraReel-Android-v0.6.3-arm64.apk)；macOS：[SakuraReel-macOS-v0.6.3-arm64.dmg](../dist/SakuraReel-macOS-v0.6.3-arm64.dmg)。iPhone IPA 尚未导出，因签名团队及描述文件需与 Bundle ID 匹配。
-- 包名：`com.vzzf.sakurareel`；当前安装包版本：`0.6.3`；Android 最低系统 Android 7.0（API 24），目标 API 36。
-- Android ARM64 Release APK 已签名并通过 `apksigner verify`；macOS Apple Silicon DMG 已通过镜像校验。尚未完成手机安装和功能验收（F4）及 Mac 完整交互验收（E7）。
+- Android：[SakuraReel-Android-v0.7.10-arm64.apk](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-Android-v0.7.10-arm64.apk)；macOS：[SakuraReel-macOS-v0.7.10-arm64.dmg](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-macOS-v0.7.10-arm64.dmg)。iPhone IPA 尚未导出，因签名团队及描述文件需与 Bundle ID 匹配。
+- 包名：`com.vzzf.sakurareel`；当前安装包版本：`0.7.10`（Android versionCode 7010）；Android 最低系统 Android 7.0（API 24），目标 API 36。
+- Android ARM64 Release APK 已签名并通过 `apksigner verify`；macOS Apple Silicon DMG 已通过镜像及应用包签名校验，使用 ad hoc 签名且未 Apple 公证。尚未完成手机安装和功能验收（F4）及 Mac 完整交互验收（E7）。
 - 后续签名升级需保留仓库外的本地签名密钥：`~/.local/share/sakurareel/android-signing/release.jks`。
+
+Web TMDb 导入与详情已实现；v0.7.10 将图片下载改为最多 6 张并行并复用重复关联图片。该优化仅适用于 Go Web 服务，原生 App 尚未实现 TMDb 导入。
 
 ## 项目结构
 
