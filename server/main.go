@@ -15,7 +15,7 @@ import (
 )
 
 // 版本号（每次迭代递增）
-const appVersion = "0.7.10"
+const appVersion = "0.7.11"
 
 //go:embed frontend/dist
 var embeddedDist embed.FS

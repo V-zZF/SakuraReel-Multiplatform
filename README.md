@@ -2,7 +2,7 @@
 
 **SakuraReel** is a personal library for tracking anime and films. The shared React interface runs in a browser and in Tauri apps for Windows, macOS, iOS, and Android.
 
-> **Current source version: v0.7.10** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
+> **Current source version: v0.7.11** · [Project status](docs/PROJECT-STATUS.md) · [Development log](DEVLOG.md)
 
 ## Features
 
@@ -10,7 +10,7 @@
 - Browse by season and revisit past seasons in the Time Machine.
 - Reorder collections and rankings with drag and drop.
 - Use the browser with the Go service, or use desktop and mobile apps with local SQLite storage and offline access.
-- In the Web app, search TMDb, choose seasons and metadata fields, and save work details and images locally. Imports download up to six images concurrently and reuse shared portraits.
+- In the Web, desktop, and Android apps, search TMDb, choose seasons and metadata fields, and save work details and images locally. Imports download up to six images concurrently and reuse shared portraits.
 - The Go service exposes REST and sync APIs. Automatic synchronization from the native apps is not implemented yet.
 
 ## Project layout
@@ -60,27 +60,27 @@ npm run tauri -- dev
 
 Platform-specific build and signing requirements vary. See the [Windows build guide](docs/WINDOWS-BUILD.md); iOS builds require Xcode and a matching Apple signing team/profile. Android release APK signing uses a private keystore that is intentionally not stored in this repository.
 
-## Web TMDb search and local details
+## TMDb search and local details
 
-The Web frontend supports TMDb search, whole-series or season collections (including specials), selective metadata import, and locally stored work details. Use the existing add button to open search and configure your personal TMDb API key. Metadata is stored in the Go server's SQLite database; selected posters, backdrops, and logos are saved beside it in `posters/`. Remote metadata imports preserve personal ratings, notes, watch dates, viewing status, playback links, and order.
+The shared frontend supports TMDb search, whole-series or season collections (including specials), selective metadata import, and locally stored work details in the browser, macOS app, and Android app. Use the existing add button to open search and configure your personal TMDb API key. The browser stores metadata in the Go server's SQLite database; native apps use Rust commands to store it in device-local SQLite. Selected posters, backdrops, logos, portraits, and episode images are saved in the respective local `posters/` directory and remain available offline. Remote metadata imports preserve personal ratings, notes, watch dates, viewing status, playback links, and order.
 
-See [the Web acceptance guide](docs/WEB-TMDB-ACCEPTANCE.md) for setup, test steps, storage behavior, and current limitations. TMDb search, metadata import, and this download optimization currently apply to the Web/Go path. The DMG and APK use the native SQLite data layer; native TMDb support is still pending.
+See [the Web acceptance guide](docs/WEB-TMDB-ACCEPTANCE.md) and [the native acceptance guide](docs/NATIVE-TMDB-ACCEPTANCE.md) for setup, test steps, storage behavior, and current limitations. Native apps require a personal TMDb API Key or read token and support custom API/image proxy URLs. The server-default Key option is available only in the Web app. Keys remain in the app/browser session and preview memory, and are not written to the collection database. Both data layers download up to six images concurrently, reuse shared portraits, and preserve existing personal records during metadata updates. Existing native databases are migrated in place to add metadata storage. Native-to-server synchronization remains pending.
 
-## Download and install v0.7.10
+## Download and install v0.7.11
 
-Download the packages from [GitHub Releases](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/tag/v0.7.10):
+Download the packages from [GitHub Releases](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/tag/v0.7.11):
 
 | Package | Requirements | Download |
 | --- | --- | --- |
-| macOS DMG | Apple Silicon (ARM64), macOS 11+ | [SakuraReel-macOS-v0.7.10-arm64.dmg](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-macOS-v0.7.10-arm64.dmg) |
-| Android APK | ARM64, Android 7.0+ (API 24) | [SakuraReel-Android-v0.7.10-arm64.apk](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SakuraReel-Android-v0.7.10-arm64.apk) |
-| SHA-256 checksums | Verify either download | [SHA256SUMS-v0.7.10.txt](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.10/SHA256SUMS-v0.7.10.txt) |
+| macOS DMG | Apple Silicon (ARM64), macOS 11+ | [SakuraReel-macOS-v0.7.11-arm64.dmg](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.11/SakuraReel-macOS-v0.7.11-arm64.dmg) |
+| Android APK | ARM64, Android 7.0+ (API 24) | [SakuraReel-Android-v0.7.11-arm64.apk](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.11/SakuraReel-Android-v0.7.11-arm64.apk) |
+| SHA-256 checksums | Verify either download | [SHA256SUMS-v0.7.11.txt](https://github.com/V-zZF/SakuraReel-Multiplatform/releases/download/v0.7.11/SHA256SUMS-v0.7.11.txt) |
 
 On macOS, open the DMG and drag SakuraReel into Applications. This build has an ad hoc signature and is not Apple-notarized; if macOS blocks opening it, use System Settings → Privacy & Security → Open Anyway for the downloaded app.
 
 On Android, allow installation from the app used to open the APK. The APK uses the existing release signing key, so it can update earlier packages signed with that key. Keep the installed app when upgrading to preserve its local data. The Android target SDK is API 36.
 
-Packages and signing material are excluded from Git; release packages are attached to GitHub Releases and retained locally in `dist/`. Intel macOS, Windows installers, and iPhone IPA packages are not included in this release. iPhone distribution still needs a matching Apple signing team and provisioning profile.
+Packages and signing material are excluded from Git; release packages are retained locally in `dist/` and attached to GitHub Releases when published. Intel macOS, Windows installers, and iPhone IPA packages are not included in this release. iPhone distribution still needs a matching Apple signing team and provisioning profile.
 
 ## Build release packages
 
@@ -103,14 +103,14 @@ npm run tauri -- android build --target aarch64 --apk --ci
 The unsigned APK is generated in `src-tauri/gen/android/app/build/outputs/apk/universal/release/`. Before installing or publishing it, align it and sign it with your existing private release keystore. With Android SDK build-tools on `PATH`:
 
 ```sh
-zipalign -f -P 16 4 app-universal-release-unsigned.apk SakuraReel-Android-v0.7.10-arm64.apk
+zipalign -f -P 16 4 app-universal-release-unsigned.apk SakuraReel-Android-v0.7.11-arm64.apk
 apksigner sign --ks /path/to/release.jks --ks-key-alias sakurareel \
-  --ks-pass file:/path/to/password-file SakuraReel-Android-v0.7.10-arm64.apk
-apksigner verify --verbose --print-certs SakuraReel-Android-v0.7.10-arm64.apk
-zipalign -c -P 16 4 SakuraReel-Android-v0.7.10-arm64.apk
+  --ks-pass file:/path/to/password-file SakuraReel-Android-v0.7.11-arm64.apk
+apksigner verify --verbose --print-certs SakuraReel-Android-v0.7.11-arm64.apk
+zipalign -c -P 16 4 SakuraReel-Android-v0.7.11-arm64.apk
 ```
 
-Never commit the keystore or its password. Keep the same signing key for future APK upgrades. After downloading both packages and the checksum file into one directory, verify them with `shasum -a 256 -c SHA256SUMS-v0.7.10.txt`.
+Never commit the keystore or its password. Keep the same signing key for future APK upgrades. After downloading both packages and the checksum file into one directory, verify them with `shasum -a 256 -c SHA256SUMS-v0.7.11.txt`.
 
 ## Development checks
 
@@ -124,7 +124,7 @@ cd ../server
 go test -race ./...
 ```
 
-GitHub Actions runs the frontend lint/build and Go tests on pushes and pull requests to `main`.
+GitHub Actions runs the frontend lint/build, Go tests, and macOS Rust integration tests on pushes and pull requests to `main`.
 
 ## Data and privacy
 

@@ -1,4 +1,5 @@
 mod local;
+mod tmdb;
 
 use tauri::Manager;
 
@@ -10,6 +11,7 @@ pub fn run() {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
             app.manage(local::LocalData::open(dir)?);
+            app.manage(tmdb::NativeTmdb::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -21,6 +23,8 @@ pub fn run() {
             local::reorder_anime,
             local::upload_poster,
             local::poster_directory,
+            tmdb::native_request,
+            tmdb::cancel_native_request,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run SakuraReel");

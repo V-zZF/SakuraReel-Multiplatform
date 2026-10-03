@@ -1,3 +1,4 @@
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import type { Anime, WorkMetadata } from "../types";
 export interface TMDbOptions {
   credential_mode?: "personal" | "server";
@@ -60,6 +61,23 @@ export async function webRequest<T>(
   method = "POST",
   signal?: AbortSignal,
 ): Promise<T> {
+  if (isTauri()) {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    const requestId = crypto.randomUUID();
+    const cancel = () => { void invoke("cancel_native_request", { requestId }).catch(() => {}); };
+    signal?.addEventListener("abort", cancel, { once: true });
+    try {
+      const result = await invoke<T>("native_request", { path, body: body ?? null, method, requestId });
+      if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+      return result;
+    } catch (error) {
+      if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+      const details = typeof error === "object" && error !== null ? error as { error?: string; existing_id?: number; image_errors?: Record<string, string> } : {};
+      throw new WebAPIError(details.error || String(error), details);
+    } finally {
+      signal?.removeEventListener("abort", cancel);
+    }
+  }
   const res = await fetch(`/api${path}`, {
     method,
     signal,

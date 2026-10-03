@@ -705,7 +705,7 @@ export default function TMDbSearch({
                   </div>
                 </div>
                 <p className="tmdb-muted tmdb-caption">
-                  个人 Key 仅在当前浏览器会话保留，不进入收藏库或导出文件。
+                  个人 Key 仅在当前会话保留，不进入收藏库或导出文件。
                 </p>
                 {stage === "settings" && (
                   <>

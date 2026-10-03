@@ -14,11 +14,9 @@ import Toast, { type ToastMessage } from './components/Toast';
 import AnimeCard from './components/AnimeCard';
 import useDragSensor from './hooks/useDragSensor';
 import TimeMachine from './components/TimeMachine';
-import { isTauri } from '@tauri-apps/api/core';
 import TMDbSearch from './components/tmdb/TMDbSearch';
 import WorkDetail from './components/tmdb/WorkDetail';
 import { captureSurfaceOrigin } from './components/tmdb/surfaceOrigin';
-const webFeatures = !isTauri();
 
 const CATEGORY_ORDER = ['watched', 'watching', 'wantwatch'];
 
@@ -187,14 +185,13 @@ export default function App() {
   // 打开添加弹窗
   const openAdd = useCallback(() => {
     setEditingAnime(null);
-    if (webFeatures) setSearchOpen(true); else setModalOpen(true);
+    setSearchOpen(true);
   }, []);
 
   // 打开编辑弹窗（编辑模式下不触发）
   const openEdit = useCallback((anime: Anime) => {
     if (isEditing) return;
-    if (webFeatures) { captureSurfaceOrigin(document.querySelector<HTMLElement>('.cursor-pointer:hover')); setDetailAnime(anime); }
-    else { setEditingAnime(anime); setModalOpen(true); }
+    captureSurfaceOrigin(document.querySelector<HTMLElement>('.cursor-pointer:hover')); setDetailAnime(anime);
   }, [isEditing]);
 
   // 关闭弹窗
@@ -208,11 +205,11 @@ export default function App() {
     try {
       if (editingAnime) {
         const saved = await update(editingAnime.id, input);
-        if (webFeatures) { setDetailAnime(saved); setRefreshToken(v => v + 1); setAnimeList(prev => saved.category === activeCategory ? [...prev.filter(a => a.id !== saved.id), saved] : prev.filter(a => a.id !== saved.id)); }
+        setDetailAnime(saved); setRefreshToken(v => v + 1); setAnimeList(prev => saved.category === activeCategory ? [...prev.filter(a => a.id !== saved.id), saved] : prev.filter(a => a.id !== saved.id));
         showToast('影视剧已更新', 'success');
       } else {
         await create(input);
-        if (webFeatures) setAnimeList(prev => prev.filter(a => a.category === activeCategory));
+        setAnimeList(prev => prev.filter(a => a.category === activeCategory));
         showToast('影视剧已添加', 'success');
       }
     } catch (e) {
@@ -225,7 +222,7 @@ export default function App() {
   const handleDelete = useCallback(async (id: number) => {
     try {
       await remove(id);
-      if (webFeatures) { setDetailAnime(null); setRefreshToken(v => v + 1); }
+      setDetailAnime(null); setRefreshToken(v => v + 1);
       showToast('影视剧已删除', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : '删除失败', 'error');
@@ -412,7 +409,7 @@ export default function App() {
 
             {/* 页脚署名 */}
             <footer className="text-center py-6 pb-24">
-              <span className="text-xs text-[#C7C7CC]">Made by VzZF · v0.5</span>
+              <span className="text-xs text-[#C7C7CC]">Made by VzZF · v{import.meta.env.VITE_APP_VERSION}</span>
             </footer>
           </motion.div>
         )}
@@ -445,8 +442,8 @@ export default function App() {
         onDelete={handleDelete}
         onUpload={handleUpload}
         initialFocus={personalFocus}
-        personalOnly={webFeatures && !!editingAnime}
-        protectChanges={webFeatures}
+        personalOnly={!!editingAnime}
+        protectChanges
       />
       </div>
       <AnimatePresence mode="wait">

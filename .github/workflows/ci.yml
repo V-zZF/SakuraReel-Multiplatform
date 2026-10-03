@@ -38,3 +38,24 @@ jobs:
           cache-dependency-path: server/go.sum
       - run: go test ./...
         working-directory: server
+
+  native:
+    name: Native Rust integration tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+        working-directory: ui
+      - run: npm run build
+        working-directory: ui
+      - run: cargo test --locked --lib
+        working-directory: src-tauri

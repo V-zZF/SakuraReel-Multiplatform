@@ -1,13 +1,18 @@
 use chrono::Local;
 use rusqlite::{params, Connection, OptionalExtension, Row, Transaction};
 use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf, sync::Mutex};
+use std::{
+    fs,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use tauri::State;
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct LocalData {
-    conn: Mutex<Connection>,
-    dir: PathBuf,
+    pub(crate) conn: Arc<Mutex<Connection>>,
+    pub(crate) dir: PathBuf,
 }
 
 impl LocalData {
@@ -37,41 +42,58 @@ impl LocalData {
             INSERT OR IGNORE INTO rev (id, current) VALUES (1, 0);
             INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', '2');",
         )?;
+        let columns = {
+            let mut stmt = conn.prepare("PRAGMA table_info(anime)")?;
+            let rows = stmt.query_map([], |row| row.get::<_, String>(1))?;
+            rows.collect::<rusqlite::Result<Vec<_>>>()?
+        };
+        if !columns.iter().any(|c| c == "metadata") {
+            conn.execute_batch(
+                "ALTER TABLE anime ADD COLUMN metadata TEXT NOT NULL DEFAULT '{}';",
+            )?;
+        }
+        if !columns.iter().any(|c| c == "local_revision") {
+            conn.execute_batch(
+                "ALTER TABLE anime ADD COLUMN local_revision INTEGER NOT NULL DEFAULT 0;",
+            )?;
+        }
+        conn.execute("UPDATE meta SET value='3' WHERE key='schema_version'", [])?;
         Ok(Self {
-            conn: Mutex::new(conn),
+            conn: Arc::new(Mutex::new(conn)),
             dir,
         })
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Anime {
-    id: i64,
-    uid: String,
-    title: String,
-    category: String,
-    rating: i64,
-    note: String,
-    poster: String,
-    watch_date: String,
-    play_link: String,
-    position: i64,
-    leaderboard_position: i64,
-    created_at: String,
-    updated_at: String,
-    deleted_at: String,
-    server_rev: i64,
+    pub(crate) id: i64,
+    pub(crate) uid: String,
+    pub(crate) title: String,
+    pub(crate) category: String,
+    pub(crate) rating: i64,
+    pub(crate) note: String,
+    pub(crate) poster: String,
+    pub(crate) watch_date: String,
+    pub(crate) play_link: String,
+    pub(crate) position: i64,
+    pub(crate) leaderboard_position: i64,
+    pub(crate) created_at: String,
+    pub(crate) updated_at: String,
+    pub(crate) deleted_at: String,
+    pub(crate) server_rev: i64,
+    pub(crate) metadata: serde_json::Value,
 }
 
 #[derive(Deserialize)]
 pub struct AnimeInput {
-    title: String,
-    category: String,
-    rating: i64,
-    note: String,
-    poster: String,
-    watch_date: String,
-    play_link: String,
+    pub(crate) title: String,
+    pub(crate) category: String,
+    pub(crate) rating: i64,
+    pub(crate) note: String,
+    pub(crate) poster: String,
+    pub(crate) watch_date: String,
+    pub(crate) play_link: String,
 }
 
 #[derive(Deserialize)]
@@ -91,7 +113,7 @@ pub struct PositionItem {
     position: i64,
 }
 
-const COLUMNS: &str = "id, uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, server_rev";
+const COLUMNS: &str = "id, uid, title, category, rating, note, poster, watch_date, play_link, position, leaderboard_position, created_at, updated_at, deleted_at, local_revision, metadata";
 
 fn scan(row: &Row<'_>) -> rusqlite::Result<Anime> {
     Ok(Anime {
@@ -110,14 +132,16 @@ fn scan(row: &Row<'_>) -> rusqlite::Result<Anime> {
         updated_at: row.get(12)?,
         deleted_at: row.get(13)?,
         server_rev: row.get(14)?,
+        metadata: serde_json::from_str(&row.get::<_, String>(15)?)
+            .unwrap_or_else(|_| serde_json::json!({})),
     })
 }
 
-fn now() -> String {
+pub(crate) fn now() -> String {
     Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
-fn valid_category(value: &str) -> bool {
+pub(crate) fn valid_category(value: &str) -> bool {
     matches!(value, "watched" | "watching" | "wantwatch")
 }
 
@@ -138,7 +162,7 @@ fn valid_watch_date(value: &str) -> bool {
         )
 }
 
-fn validate(input: &mut AnimeInput) -> Result<(), String> {
+pub(crate) fn validate(input: &mut AnimeInput) -> Result<(), String> {
     input.title = input.title.trim().to_string();
     input.play_link = input.play_link.trim().to_string();
     if input.title.is_empty() || input.title.chars().count() > 200 {
@@ -165,7 +189,7 @@ fn validate(input: &mut AnimeInput) -> Result<(), String> {
     Ok(())
 }
 
-fn get(conn: &Connection, id: i64) -> Result<Anime, String> {
+pub(crate) fn get(conn: &Connection, id: i64) -> Result<Anime, String> {
     conn.query_row(
         &format!("SELECT {COLUMNS} FROM anime WHERE id=?1 AND deleted_at=''"),
         [id],
@@ -176,7 +200,7 @@ fn get(conn: &Connection, id: i64) -> Result<Anime, String> {
     .ok_or_else(|| "影视剧不存在".into())
 }
 
-fn max_position(
+pub(crate) fn max_position(
     tx: &Transaction<'_>,
     column: &str,
     category: Option<&str>,
@@ -193,8 +217,12 @@ fn max_position(
     }
 }
 
-fn shift_month(tx: &Transaction<'_>, category: &str, date: &str) -> rusqlite::Result<()> {
-    tx.execute("UPDATE anime SET position=position+1, updated_at=?1, server_rev=0 WHERE category=?2 AND watch_date=?3 AND deleted_at=''", params![now(), category, date])?;
+pub(crate) fn shift_month(
+    tx: &Transaction<'_>,
+    category: &str,
+    date: &str,
+) -> rusqlite::Result<()> {
+    tx.execute("UPDATE anime SET position=position+1, updated_at=?1, server_rev=0, local_revision=local_revision+1 WHERE category=?2 AND watch_date=?3 AND deleted_at=''", params![now(), category, date])?;
     Ok(())
 }
 
@@ -207,7 +235,7 @@ fn compact(tx: &Transaction<'_>, category: &str) -> rusqlite::Result<()> {
         rows.collect::<rusqlite::Result<Vec<_>>>()?
     };
     for (position, id) in ids.iter().enumerate() {
-        tx.execute("UPDATE anime SET position=?1, updated_at=?2, server_rev=0 WHERE id=?3 AND position<>?1", params![position as i64, now(), id])?;
+        tx.execute("UPDATE anime SET position=?1, updated_at=?2, server_rev=0, local_revision=local_revision+1 WHERE id=?3 AND position<>?1", params![position as i64, now(), id])?;
     }
     Ok(())
 }
@@ -351,7 +379,7 @@ pub fn update_anime(
         shift_month(&tx, &merged.category, &merged.watch_date).map_err(|e| e.to_string())?;
         position = 0;
     }
-    tx.execute("UPDATE anime SET title=?1,category=?2,rating=?3,note=?4,poster=?5,watch_date=?6,play_link=?7,position=?8,updated_at=?9,server_rev=0 WHERE id=?10 AND deleted_at=''",
+    tx.execute("UPDATE anime SET title=?1,category=?2,rating=?3,note=?4,poster=?5,watch_date=?6,play_link=?7,position=?8,updated_at=?9,server_rev=0, local_revision=local_revision+1 WHERE id=?10 AND deleted_at=''",
         params![merged.title, merged.category, merged.rating, merged.note, merged.poster, merged.watch_date, merged.play_link, position, now(), id]
     ).map_err(|e| e.to_string())?;
     if merged.category != old_category {
@@ -368,7 +396,7 @@ pub fn delete_anime(id: i64, state: State<'_, LocalData>) -> Result<(), String> 
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     let time = now();
     tx.execute(
-        "UPDATE anime SET deleted_at=?1,updated_at=?1,server_rev=0 WHERE id=?2",
+        "UPDATE anime SET deleted_at=?1,updated_at=?1,server_rev=0, local_revision=local_revision+1 WHERE id=?2",
         params![time, id],
     )
     .map_err(|e| e.to_string())?;
@@ -393,7 +421,7 @@ pub fn reorder_anime(
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     let sql = format!(
-        "UPDATE anime SET {column}=?1,updated_at=?2,server_rev=0 WHERE id=?3 AND deleted_at=''"
+        "UPDATE anime SET {column}=?1,updated_at=?2,server_rev=0, local_revision=local_revision+1 WHERE id=?3 AND deleted_at=''"
     );
     let time = now();
     for item in items {
